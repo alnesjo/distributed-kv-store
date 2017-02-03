@@ -1,48 +1,41 @@
 import se.sics.kompics.sl._
 import se.sics.kompics.{Kompics, KompicsEvent, Start, Init => JInit}
+//import se.sics.kompics.network.{Network}
 
 sealed trait KeyValueStoreEvent extends KompicsEvent
-case class Get(key: Int) extends KeyValueStoreEvent // TODO allow keys and values other than itegers and strings
-case class Store(key: Int, value: String) extends KeyValueStoreEvent
-case class Post(key: Int, value: String) extends KeyValueStoreEvent
+case class Get(key: String) extends KeyValueStoreEvent // TODO allow keys and values other than strings
+case class Store(key: String, value: String) extends KeyValueStoreEvent
+case class Post(key: String, value: String) extends KeyValueStoreEvent
 
-object KeyValueStorePort extends Port {
-  request[KeyValueStoreEvent]
-  indication[KeyValueStoreEvent]
+// Borrowing some ideas from the Java code skeleton which is confusing for now
+case class RouteMessage(key: String, message: KompicsEvent) extends KompicsEvent
+
+object RoutePort extends Port {
+  request[RouteMessage]
+  indication[RouteMessage]
 }
 
-/**
-  * Key-value storage
-  * Ring structure?
-  */
-class KeyValueStoreComponent extends ComponentDefinition {
-  // Predecessor ports
-  val predIn = requires(KeyValueStorePort)
-  val predOut = provides(KeyValueStorePort)
-  // Successor ports
-  val succIn = requires(KeyValueStorePort)
-  val succOut = provides(KeyValueStorePort)
-  // Client ports
-  val clientIn = requires(KeyValueStorePort)
-  val clientOut = provides(KeyValueStorePort)
+class KeyValueStore extends ComponentDefinition {
+  val input = requires(RoutePort)
+  val output = provides(RoutePort)
 
-  clientIn uponEvent {
+  input uponEvent {
+    case RouteMessage("This key is probably unrelated to the storage", Get(key)) => handle {
+      ???
+    }
     case Get(key) => handle {
       // Something along the lines of
       //   if this node contains key, then post it's value back
       //   otherwise ask someone else
-      trigger(Post(key, "Some value fetched from storage"), clientOut)
-      trigger(Get(key), succOut)
+      //   perhaps get-requests are multicast to begin with?
+      trigger(RouteMessage("key?", Post(key, "Some value fetched from storage")), output)
       ???
     }
     case Store(key, value) => handle {
       ???
     }
     case Post(key, value) => handle {
-      // Clients should not post, right?
       ???
     }
   }
-  predIn uponEvent {???}
-  succIn uponEvent {???}
 }
