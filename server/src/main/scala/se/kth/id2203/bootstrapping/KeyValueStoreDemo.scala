@@ -1,14 +1,11 @@
+package se.kth.id2203.bootstrapping
+
+import se.kth.id2203.kvstore._
 import se.sics.kompics.network.Network
 import se.sics.kompics.sl._
-import se.sics.kompics.{Kompics, KompicsEvent, Start, Init => JInit}
-import se.sics.kompics.network.{Network}
+import se.sics.kompics.{Kompics, Start, Init => JInit}
 
-sealed trait KeyValueStoreEvent extends KompicsEvent
-case class Get(key: String) extends KeyValueStoreEvent // TODO allow keys and values other than strings
-case class Store(key: String, value: String) extends KeyValueStoreEvent
-case class Post(key: String, value: String) extends KeyValueStoreEvent
-
-class KeyValueStore extends ComponentDefinition {
+class KeyValueStoreDemo extends ComponentDefinition {
   val input = requires[Network]
   val output = provides[Network]
   ctrl uponEvent {
@@ -22,6 +19,7 @@ class KeyValueStore extends ComponentDefinition {
       trigger(Post("A", "apple"), output)
     }
     case Get("next key") => handle {
+      Kompics.asyncShutdown()
     }
     case Get(key) => handle {
       trigger(Post(key, "some fruit"), output)
@@ -39,12 +37,12 @@ class KeyValueStore extends ComponentDefinition {
   }
 }
 
-class KeyValueStoreService extends ComponentDefinition {
-  val boot = create(classOf[KeyValueStore], JInit.NONE)
+class KeyValueStoreDemoService extends ComponentDefinition {
+  val boot = create(classOf[KeyValueStoreDemo], JInit.NONE)
   connect[Network](boot -> boot)
 }
 
-object Main2 extends App {
-  Kompics.createAndStart(classOf[KeyValueStoreService])
+object KeyValueStoreDemoMain extends App {
+  Kompics.createAndStart(classOf[KeyValueStoreDemoService])
   Kompics.waitForTermination()
 }

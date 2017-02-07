@@ -1,5 +1,5 @@
 import se.sics.kompics.sl._
-import se.sics.kompics.{Kompics, KompicsEvent, Start, Init => JInit};
+import se.sics.kompics.{Kompics, KompicsEvent, Start, Init => JInit}
 
 //-----------------------------------------------------
 //STEP 1: Define the basic events for the service (with counters)
