@@ -1,4 +1,4 @@
-# ID2203 -- Distributed Systems, Advanced -- Course Project
+# ID2203 - Distributed Systems, Advanced - Course Project
 
 ## Infrastructure
 For this task you have to design the basic infrastructural layers for the key-value store.
