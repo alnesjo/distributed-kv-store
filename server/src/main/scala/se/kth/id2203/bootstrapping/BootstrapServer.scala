@@ -29,10 +29,10 @@ class BootstrapServer extends ComponentDefinition {
   val bootThreshold = config getValue("id2203.project.bootThreshold", classOf[Int])
 
   var state: State = Collecting
-  var timeoutId: UUID // What is the point of this?
+  var timeoutId: UUID = ??? // What is the point of this?
   var active = Set[NetAddress]()
   var ready = Set[NetAddress]()
-  var initialAssignment: NodeAssignment = ???
+  var initialAssignment: NodeAssignment = ??? // Do we have a notion of an empty assignment?
 
   ctrl uponEvent {
     case _: Start => handle {
@@ -67,19 +67,19 @@ class BootstrapServer extends ComponentDefinition {
   boot uponEvent {
     case InitialAssignments(assignment) => handle {
       initialAssignment = assignment
-      for (node <- active) trigger(new NetMessage(self, node, Boot(initialAssignment)), net)
+      for (node <- active) {
+        trigger(NetMessage(self, node, Boot(initialAssignment)), net)
+      }
       ready += self
     }
   }
 
   net uponEvent {
-    case msg: NetMessage => handle {
-      // payload=Active?
-      active += msg.getSource
+    case NetMessage(src, _, Active) => handle {
+      active += src
     }
-    case msg: NetMessage => handle {
-      // payload=Ready?
-      ready += msg.getSource
+    case NetMessage(src, _, Ready) => handle {
+      ready += src
     }
   }
 }
