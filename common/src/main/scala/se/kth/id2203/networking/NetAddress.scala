@@ -4,7 +4,7 @@ import java.net.{InetAddress, InetSocketAddress}
 
 import se.sics.kompics.network.Address
 
-class NetAddress(address: InetAddress, port: Int) extends Serializable with Address with Comparable[NetAddress] {
+class NetAddress(address: InetAddress, port: Int) extends Address with Serializable with Comparable[NetAddress] {
   val isa = new InetSocketAddress(address, port)
   override def getIp = isa.getAddress
   override def sameHostAs(other: Address) = isa equals other.asSocket
