@@ -17,12 +17,12 @@ class EagerReliableBroadcast(init: Init[EagerReliableBroadcast]) extends Compone
 
   rb uponEvent {
     case Broadcast(payload) => handle {
-      trigger(Broadcast(From(self, payload)), beb)
+      trigger(Broadcast(Source(self, payload)), beb)
     }
   }
 
   beb uponEvent {
-    case Deliver(_, data@From(sender, payload)) => handle {
+    case Deliver(_, data@Source(sender, payload)) => handle {
       if (delivered add payload) {
         trigger(Deliver(sender, payload), rb)
         trigger(Broadcast(data), beb)
