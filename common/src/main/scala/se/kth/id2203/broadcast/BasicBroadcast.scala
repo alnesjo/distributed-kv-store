@@ -1,7 +1,6 @@
 package se.kth.id2203.broadcast
 
-import se.kth.id2203.link.{PL_Send, PerfectLink}
-import se.kth.id2203.ports._
+import se.kth.id2203.link.{Deliver, PerfectLink, Send}
 import se.sics.kompics.network._
 import se.sics.kompics.sl._
 
@@ -11,20 +10,20 @@ class BasicBroadcast(init: Init[BasicBroadcast]) extends ComponentDefinition {
   val beb = provides[BestEffortBroadcast]
 
   val (self, topology) = init match {
-    case Init(s: Address, t: Set[Address]@unchecked) => (s, t)
+    case Init(s: Address, t: Set[Address]) => (s, t)
   }
 
   beb uponEvent {
-    case x: BEB_Broadcast => handle {
+    case x: Broadcast => handle {
       for (p <- topology) {
-        trigger(PL_Send(p,x), pl)
+        trigger(Send(p,x), pl)
       }
     }
   }
 
   pl uponEvent {
-    case PL_Deliver(src, BEB_Broadcast(payload)) => handle {
-      trigger(BEB_Deliver(src, payload), beb)
+    case Deliver(src, Broadcast(payload)) => handle {
+      trigger(Deliver(src, payload), beb)
     }
   }
 

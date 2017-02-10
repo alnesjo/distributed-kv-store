@@ -1,8 +1,8 @@
 package se.kth.id2203.broadcast
 
-import se.kth.id2203.ports._
+import se.kth.id2203.link.Deliver
 import se.sics.kompics.KompicsEvent
-import se.sics.kompics.network._
+import se.sics.kompics.network.Address
 import se.sics.kompics.sl._
 
 class EagerReliableBroadcast(init: Init[EagerReliableBroadcast]) extends ComponentDefinition {
@@ -11,25 +11,23 @@ class EagerReliableBroadcast(init: Init[EagerReliableBroadcast]) extends Compone
   val rb = provides[ReliableBroadcast]
 
   val (self, delivered) = init match {
-    case Init(self: Address) =>
-      (self, collection.mutable.Set[KompicsEvent]())
+    case Init(s: Address) =>
+      (s, collection.mutable.Set[KompicsEvent]())
   }
 
   rb uponEvent {
-    case RB_Broadcast(payload) => handle {
-      trigger(BEB_Broadcast(OriginatedData(self, payload)), beb)
+    case Broadcast(payload) => handle {
+      trigger(Broadcast(From(self, payload)), beb)
     }
   }
 
   beb uponEvent {
-    case BEB_Deliver(_, data@OriginatedData(origin, payload)) => handle {
+    case Deliver(_, data@From(sender, payload)) => handle {
       if (delivered add payload) {
-        trigger(RB_Deliver(origin, payload), rb)
-        trigger(BEB_Broadcast(data), beb)
+        trigger(Deliver(sender, payload), rb)
+        trigger(Broadcast(data), beb)
       }
     }
   }
 
 }
-
-case class OriginatedData(src: Address, payload: KompicsEvent) extends KompicsEvent

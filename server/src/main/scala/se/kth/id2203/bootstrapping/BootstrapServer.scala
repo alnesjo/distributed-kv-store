@@ -2,7 +2,7 @@ package se.kth.id2203.bootstrapping
 
 import java.util.UUID
 
-import se.kth.id2203.link.{PL_Deliver, PL_Send, PerfectLink}
+import se.kth.id2203.link.{Deliver, PerfectLink, Send}
 import se.sics.kompics.network.Address
 import se.sics.kompics.timer.{CancelPeriodicTimeout, SchedulePeriodicTimeout, Timeout, Timer}
 import se.sics.kompics.sl._
@@ -59,17 +59,17 @@ class BootstrapServer extends ComponentDefinition {
     case InitialAssignments(assignment) => handle {
       initialAssignment = assignment
       for (node <- active) {
-        trigger(PL_Send(node, Boot(initialAssignment)), pl)
+        trigger(Send(node, Boot(initialAssignment)), pl)
       }
       ready += self
     }
   }
 
   pl uponEvent {
-    case PL_Deliver(src, Active) => handle {
+    case Deliver(src, Active) => handle {
       active += src
     }
-    case PL_Deliver(src, Ready) => handle {
+    case Deliver(src, Ready) => handle {
       ready += src
     }
   }
