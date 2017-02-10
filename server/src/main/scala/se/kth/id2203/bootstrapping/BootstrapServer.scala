@@ -2,36 +2,26 @@ package se.kth.id2203.bootstrapping
 
 import java.util.UUID
 
-import se.kth.id2203.networking._
-import se.sics.kompics.network.Network
+import se.kth.id2203.link.{PL_Deliver, PL_Send, PerfectLink}
+import se.sics.kompics.network.Address
 import se.sics.kompics.timer.{CancelPeriodicTimeout, SchedulePeriodicTimeout, Timeout, Timer}
 import se.sics.kompics.sl._
-import se.sics.kompics.{Kompics, KompicsEvent, Start, Init => JInit}
-
-sealed trait State
-case object Collecting extends State
-case object Seeding extends State
-case object Done extends State
-
-class BootstrapTimeout(spt: SchedulePeriodicTimeout) extends Timeout(spt)
-
-case class Boot(assignment: NodeAssignment) extends KompicsEvent with Serializable
-
-case object Active extends KompicsEvent
-case object Ready extends KompicsEvent
+import se.sics.kompics.{KompicsEvent, Start}
 
 class BootstrapServer extends ComponentDefinition {
-  val boot = provides(Bootstrapping)
-  val net = requires[Network]
-  val timer = requires[Timer]
 
-  val self = config getValue("id2203.project.address", classOf[NetAddress])
+  val boot = provides[Bootstrapping]
+  val pl = requires[PerfectLink]
+  val timer = requires[Timer]
+  // Should probably be able to use some reliable broadcasting abstraction rather than a raw link
+
+  val self = config getValue("id2203.project.address", classOf[Address])
   val bootThreshold = config getValue("id2203.project.bootThreshold", classOf[Int])
 
   var state: State = Collecting
   var timeoutId: UUID = ??? // What is the point of this?
-  var active = Set[NetAddress]()
-  var ready = Set[NetAddress]()
+  var active = Set[Address]()
+  var ready = Set[Address]()
   var initialAssignment: NodeAssignment = ??? // Do we have a notion of an empty assignment?
 
   ctrl uponEvent {
@@ -59,6 +49,7 @@ class BootstrapServer extends ComponentDefinition {
             state = Done
           }
         case Done =>
+          trigger(CancelPeriodicTimeout, timer)
           suicide()
       }
     }
@@ -68,18 +59,26 @@ class BootstrapServer extends ComponentDefinition {
     case InitialAssignments(assignment) => handle {
       initialAssignment = assignment
       for (node <- active) {
-        trigger(NetMessage(self, node, Boot(initialAssignment)), net)
+        trigger(PL_Send(node, Boot(initialAssignment)), pl)
       }
       ready += self
     }
   }
 
-  net uponEvent {
-    case NetMessage(src, _, Active) => handle {
+  pl uponEvent {
+    case PL_Deliver(src, Active) => handle {
       active += src
     }
-    case NetMessage(src, _, Ready) => handle {
+    case PL_Deliver(src, Ready) => handle {
       ready += src
     }
   }
+
 }
+
+class BootstrapTimeout(spt: SchedulePeriodicTimeout) extends Timeout(spt)
+
+case class Boot(assignment: NodeAssignment) extends KompicsEvent with Serializable
+
+case object Active extends KompicsEvent
+case object Ready extends KompicsEvent

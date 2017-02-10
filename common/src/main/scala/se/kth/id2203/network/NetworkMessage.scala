@@ -1,12 +1,12 @@
-package se.kth.id2203.networking
+package se.kth.id2203.network
 
 import se.sics.kompics.KompicsEvent
 import se.sics.kompics.network.{Address, Msg, Transport}
 
-case class NetMessage(src: Address, dst: Address, ptc: Transport, payload: KompicsEvent)
-  extends Msg[NetAddress, NetHeader] with Serializable {
+case class NetworkMessage(src: Address, dst: Address, ptc: Transport, payload: KompicsEvent)
+  extends Msg[NetworkAddress, NetworkHeader] with Serializable {
 
-  val header = NetHeader(src, dst, ptc)
+  val header = NetworkHeader(src, dst, ptc)
 
   override def getHeader = header
 

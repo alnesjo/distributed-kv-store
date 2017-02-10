@@ -1,16 +1,9 @@
-package se.kth.id2203.broadcasting
+package se.kth.id2203.broadcast
 
-import se.kth.id2203.broadcasting.EagerReliableBroadcast._
 import se.kth.id2203.ports._
 import se.sics.kompics.KompicsEvent
 import se.sics.kompics.network._
 import se.sics.kompics.sl._
-
-object EagerReliableBroadcast {
-
-  case class OriginatedData(src: Address, payload: KompicsEvent) extends KompicsEvent
-
-}
 
 class EagerReliableBroadcast(init: Init[EagerReliableBroadcast]) extends ComponentDefinition {
 
@@ -38,3 +31,5 @@ class EagerReliableBroadcast(init: Init[EagerReliableBroadcast]) extends Compone
   }
 
 }
+
+case class OriginatedData(src: Address, payload: KompicsEvent) extends KompicsEvent

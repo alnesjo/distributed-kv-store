@@ -1,8 +1,8 @@
-package se.kth.id2203.networking
+package se.kth.id2203.network
 
 import se.sics.kompics.network.{Address, Header, Transport}
 
-case class NetHeader(src: Address, dst: Address, ptc: Address) extends Header[NetAddress] {
+case class NetworkHeader(src: Address, dst: Address, ptc: Address) extends Header[NetworkAddress] {
 
   override def getSource = src
 

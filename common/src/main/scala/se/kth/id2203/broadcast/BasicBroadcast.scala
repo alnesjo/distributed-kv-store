@@ -1,5 +1,6 @@
-package se.kth.id2203.broadcasting
+package se.kth.id2203.broadcast
 
+import se.kth.id2203.link.{PL_Send, PerfectLink}
 import se.kth.id2203.ports._
 import se.sics.kompics.network._
 import se.sics.kompics.sl._
