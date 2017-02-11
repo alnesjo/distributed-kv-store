@@ -1,7 +1,8 @@
 package se.kth.id2203.link
 
-import se.kth.id2203.network._
-import se.sics.kompics.network._
+import se.kth.id2203.events.{Deliver, Send}
+import se.kth.id2203.ports.PerfectLink
+import se.sics.kompics.network.{Address, Network, Transport}
 import se.sics.kompics.sl._
 
 

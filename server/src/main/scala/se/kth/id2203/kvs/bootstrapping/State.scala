@@ -1,4 +1,4 @@
-package se.kth.id2203.bootstrapping
+package se.kth.id2203.kvs.bootstrapping
 
 sealed trait State
 

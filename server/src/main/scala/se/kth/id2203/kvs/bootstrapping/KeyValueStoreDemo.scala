@@ -1,6 +1,6 @@
-package se.kth.id2203.bootstrapping
+package se.kth.id2203.kvs.bootstrapping
 
-import se.kth.id2203.kvstore._
+import se.kth.id2203.kvs._
 import se.sics.kompics.network.Network
 import se.sics.kompics.sl._
 import se.sics.kompics.{Kompics, Start, Init => JInit}

@@ -1,4 +1,4 @@
-package se.kth.id2203.kvstore
+package se.kth.id2203.kvs
 
 import se.sics.kompics.KompicsEvent
 

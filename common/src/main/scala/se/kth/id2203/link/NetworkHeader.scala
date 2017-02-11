@@ -1,4 +1,4 @@
-package se.kth.id2203.network
+package se.kth.id2203.link
 
 import se.sics.kompics.network.{Address, Header, Transport}
 

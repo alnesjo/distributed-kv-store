@@ -1,7 +1,7 @@
-package se.kth.id2203.network
+package se.kth.id2203.link
 
 import se.sics.kompics.KompicsEvent
-import se.sics.kompics.network.{Address, Header, Msg, Transport}
+import se.sics.kompics.network.{Address, Msg, Transport}
 
 case class NetworkMessage(src: Address, dst: Address, ptc: Transport, payload: KompicsEvent)
   extends Msg[Address, NetworkHeader] with Serializable {

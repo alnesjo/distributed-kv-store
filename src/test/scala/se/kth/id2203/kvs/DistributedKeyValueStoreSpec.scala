@@ -1,7 +1,8 @@
-package se.kth.id2203
+package se.kth.id2203.kvs
+
+import org.scalatest._
 
 import scala.collection.mutable
-import org.scalatest._
 
 class DistributedKeyValueStoreSpec extends FlatSpec with Matchers {
 

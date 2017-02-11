@@ -1,4 +1,4 @@
-package se.kth.id2203.bootstrapping
+package se.kth.id2203.kvs.bootstrapping
 
 import se.sics.kompics.KompicsEvent
 import se.sics.kompics.network.Address

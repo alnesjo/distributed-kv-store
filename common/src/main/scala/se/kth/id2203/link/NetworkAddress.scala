@@ -1,6 +1,7 @@
-package se.kth.id2203.network
+package se.kth.id2203.link
 
 import java.net.{InetAddress, InetSocketAddress}
+
 import se.sics.kompics.network.Address
 
 case class NetworkAddress(address: InetAddress, port: Int) extends Address with Serializable with Comparable[NetworkAddress] {
