@@ -1,3 +1,4 @@
+import sbt.Keys._
 import sbt._
 
 object BuildDistributedKeyValueStore extends Build {

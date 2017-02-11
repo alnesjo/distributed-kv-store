@@ -1,7 +1,6 @@
 package se.kth.id2203.link
 
 import se.kth.id2203.network._
-import se.kth.id2203.ports._
 import se.sics.kompics.network._
 import se.sics.kompics.sl._
 
@@ -16,14 +15,14 @@ class PerfectP2PLink(init: Init[PerfectP2PLink]) extends ComponentDefinition {
   }
 
   pl uponEvent {
-    case PL_Send(dest, payload) => handle {
-      trigger(NetworkMessage(self, dest, Transport.TCP, payload) -> network)
+    case Send(dest, payload) => handle {
+      trigger(NetworkMessage(self, dest, Transport.TCP, payload), network)
     }
   }
 
   network uponEvent {
     case NetworkMessage(src, _, _, payload) => handle {
-      trigger(PL_Deliver(src, payload) -> pl)
+      trigger(Deliver(src, payload), pl)
     }
   }
 

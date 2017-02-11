@@ -26,9 +26,9 @@ class BootstrapServer extends ComponentDefinition {
 
   ctrl uponEvent {
     case _: Start => handle {
-      val timeout = 2 * (config getValue("id2203.project.keepAlivePeriod", classOf[Long]))
-      var spt = new SchedulePeriodicTimeout(timeout, timeout)
-      spt.setTimeoutEvent(new BootstrapTimeout(spt))
+      val period = 2 * (config getValue("id2203.project.keepAlivePeriod", classOf[Long]))
+      var spt = new SchedulePeriodicTimeout(period, period)
+      spt.setTimeoutEvent(BootstrapTimeout(spt))
       trigger(spt, timer)
       timeoutId = spt.getTimeoutEvent.getTimeoutId
       active += self
@@ -49,7 +49,7 @@ class BootstrapServer extends ComponentDefinition {
             state = Done
           }
         case Done =>
-          trigger(CancelPeriodicTimeout, timer)
+          trigger(new CancelPeriodicTimeout(timeoutId), timer)
           suicide()
       }
     }
@@ -76,7 +76,7 @@ class BootstrapServer extends ComponentDefinition {
 
 }
 
-class BootstrapTimeout(spt: SchedulePeriodicTimeout) extends Timeout(spt)
+case class BootstrapTimeout(spt: SchedulePeriodicTimeout) extends Timeout(spt)
 
 case class Boot(assignment: NodeAssignment) extends KompicsEvent with Serializable
 
