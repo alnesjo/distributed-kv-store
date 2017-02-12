@@ -2,6 +2,7 @@ package se.kth.id2203.kvs.bootstrapping
 
 import java.util.UUID
 
+import se.kth.id2203.events._
 import se.kth.id2203.events.{Deliver, Send}
 import se.kth.id2203.ports.PerfectLink
 import se.sics.kompics.network.Address
