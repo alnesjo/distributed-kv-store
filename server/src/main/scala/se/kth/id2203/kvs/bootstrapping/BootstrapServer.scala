@@ -2,7 +2,6 @@ package se.kth.id2203.kvs.bootstrapping
 
 import java.util.UUID
 
-import se.kth.id2203.events._
 import se.kth.id2203.events.{Deliver, Send}
 import se.kth.id2203.ports.PerfectLink
 import se.sics.kompics.network.Address
@@ -12,8 +11,8 @@ import se.sics.kompics.{KompicsEvent, Start}
 
 class BootstrapServer extends ComponentDefinition {
 
-  val boot = provides[Bootstrapping]
-  val pl = requires[PerfectLink]
+  val boot = provides(Bootstrapping)
+  val pl = requires(PerfectLink)
   val timer = requires[Timer]
   // Should probably be able to use some reliable broadcasting abstraction rather than a raw link
 
@@ -29,7 +28,7 @@ class BootstrapServer extends ComponentDefinition {
   ctrl uponEvent {
     case _: Start => handle {
       val period = 2 * (config getValue("id2203.project.keepAlivePeriod", classOf[Long]))
-      var spt = new SchedulePeriodicTimeout(period, period)
+      val spt = new SchedulePeriodicTimeout(period, period)
       spt.setTimeoutEvent(BootstrapTimeout(spt))
       trigger(spt, timer)
       timeoutId = spt.getTimeoutEvent.getTimeoutId

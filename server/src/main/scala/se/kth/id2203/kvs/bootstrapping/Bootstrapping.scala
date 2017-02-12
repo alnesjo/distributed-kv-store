@@ -4,12 +4,10 @@ import se.sics.kompics.KompicsEvent
 import se.sics.kompics.network.Address
 import se.sics.kompics.sl._
 
-class Bootstrapping extends Port {
-
+object Bootstrapping extends Port {
   indication[GetInitialAssignments]
   indication[Booted]
   request[InitialAssignments]
-
 }
 
 case class GetInitialAssignments(nodes: Set[Address]) extends KompicsEvent

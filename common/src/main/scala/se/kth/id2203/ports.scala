@@ -1,26 +1,36 @@
 package se.kth.id2203
 
-import se.kth.id2203.events.{Broadcast, Deliver, Send}
+import se.kth.id2203.events._
 import se.sics.kompics.sl.Port
 
 object ports {
 
-  class PerfectLink extends Port {
+  object FairLossLink extends Port {
     indication[Deliver]
     request[Send]
   }
 
-  class BestEffortBroadcast extends Port {
+  object StubbornLink extends Port {
+    indication[Deliver]
+    request[Send]
+  }
+
+  object PerfectLink extends Port {
+    indication[Deliver]
+    request[Send]
+  }
+
+  object BestEffortBroadcast extends Port {
     indication[Deliver]
     request[Broadcast]
   }
 
-  class ReliableBroadcast extends Port {
+  object ReliableBroadcast extends Port {
     indication[Deliver]
     request[Broadcast]
   }
 
-  class CausalOrderReliableBroadcast extends Port {
+  object CausalOrderReliableBroadcast extends Port {
     indication[Deliver]
     request[Broadcast]
   }

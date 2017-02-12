@@ -8,8 +8,8 @@ import se.sics.kompics.sl._
 
 class EagerReliableBroadcast(init: Init[EagerReliableBroadcast]) extends ComponentDefinition {
 
-  val beb = requires[BestEffortBroadcast]
-  val rb = provides[ReliableBroadcast]
+  val beb = requires(BestEffortBroadcast)
+  val rb = provides(ReliableBroadcast)
 
   val (self, delivered) = init match {
     case Init(s: Address) =>

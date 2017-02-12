@@ -8,7 +8,7 @@ import se.sics.kompics.sl._
 
 class PerfectP2PLink(init: Init[PerfectP2PLink]) extends ComponentDefinition {
 
-  val pl = provides[PerfectLink]
+  val pl = provides(PerfectLink)
   val network = requires[Network]
 
   val self = init match {
