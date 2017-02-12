@@ -2,8 +2,8 @@ package se.kth.id2203.kvs.bootstrapping
 
 import java.util.UUID
 
-import se.kth.id2203.events.{Deliver, Send}
-import se.kth.id2203.ports.PerfectLink
+import se.kth.id2203.event.{Deliver, Send}
+import se.kth.id2203.port.PerfectLink
 import se.sics.kompics.network.Address
 import se.sics.kompics.timer.{CancelPeriodicTimeout, SchedulePeriodicTimeout, Timeout, Timer}
 import se.sics.kompics.sl._

@@ -1,7 +1,7 @@
 package se.kth.id2203.broadcast
 
-import se.kth.id2203.events.{Broadcast, Deliver, Send}
-import se.kth.id2203.ports.{BestEffortBroadcast, PerfectLink}
+import se.kth.id2203.event.{Broadcast, Deliver, Send}
+import se.kth.id2203.port.{BestEffortBroadcast, PerfectLink}
 import se.sics.kompics.network.Address
 import se.sics.kompics.sl._
 

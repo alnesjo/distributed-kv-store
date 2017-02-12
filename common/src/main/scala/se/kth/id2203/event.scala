@@ -3,7 +3,7 @@ package se.kth.id2203
 import se.sics.kompics.KompicsEvent
 import se.sics.kompics.network.Address
 
-object events {
+object event {
 
   case class Broadcast(payload: KompicsEvent) extends KompicsEvent
 

@@ -1,9 +1,9 @@
 package se.kth.id2203
 
-import se.kth.id2203.events._
+import se.kth.id2203.event._
 import se.sics.kompics.sl.Port
 
-object ports {
+object port {
 
   object FairLossLink extends Port {
     indication[Deliver]
