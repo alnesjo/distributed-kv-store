@@ -1,7 +1,6 @@
 package se.kth.id2203.link
 
-import se.kth.id2203.event.{Deliver, Send}
-import se.kth.id2203.port.FairLossLink
+import se.kth.id2203.{Deliver, Send, FairLossLink}
 import se.sics.kompics.network.{Address, Network, Transport}
 import se.sics.kompics.sl._
 

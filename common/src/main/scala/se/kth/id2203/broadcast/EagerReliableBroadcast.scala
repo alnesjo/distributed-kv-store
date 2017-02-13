@@ -1,7 +1,6 @@
 package se.kth.id2203.broadcast
 
-import se.kth.id2203.event.{Broadcast, Deliver}
-import se.kth.id2203.port.{BestEffortBroadcast, ReliableBroadcast}
+import se.kth.id2203.{Broadcast, Deliver, BestEffortBroadcast, ReliableBroadcast}
 import se.sics.kompics.KompicsEvent
 import se.sics.kompics.network.Address
 import se.sics.kompics.sl._

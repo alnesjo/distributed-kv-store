@@ -1,9 +1,16 @@
-package se.kth.id2203
+package se.kth
 
-import se.kth.id2203.event._
+import se.sics.kompics.KompicsEvent
+import se.sics.kompics.network.Address
 import se.sics.kompics.sl.Port
 
-object port {
+package object id2203 {
+
+  case class Broadcast(payload: KompicsEvent) extends KompicsEvent
+
+  case class Deliver(src: Address, payload: KompicsEvent) extends KompicsEvent
+
+  case class Send(dst: Address, payload: KompicsEvent) extends KompicsEvent
 
   object FairLossLink extends Port {
     indication[Deliver]
