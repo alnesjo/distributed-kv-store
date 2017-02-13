@@ -19,7 +19,7 @@ class VSOverlayManager extends ComponentDefinition {
   val net = requires[Network]
   val timer = requires[Timer]
 
-  val self = config.getValue("id2203.project.address", classOf[Address])
+  val self = cfg.getValue[Address]("id2203.project.address")
   var lookupTable: LookupTable = _
 
   boot uponEvent {

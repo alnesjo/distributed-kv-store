@@ -17,8 +17,8 @@ class BootstrapServer extends ComponentDefinition {
   val beb = requires(BestEffortBroadcast)
   val timer = requires[Timer]
 
-  val self = config.getValue("id2203.project.address", classOf[Address])
-  val bootThreshold = config.getValue("id2203.project.bootThreshold", classOf[Int])
+  val self = cfg.getValue[Address]("id2203.project.address")
+  val bootThreshold = cfg.getValue[Int]("id2203.project.bootThreshold")
 
   var state: State = Collecting
   var timeoutId: UUID = _

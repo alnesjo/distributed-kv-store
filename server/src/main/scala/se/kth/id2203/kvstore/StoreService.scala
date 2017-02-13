@@ -13,7 +13,7 @@ class StoreService extends ComponentDefinition {
   val net = requires[Network]
   val route = requires(Routing)
 
-  val self = config.getValue("id2203.project.address", classOf[Address])
+  val self = cfg.getValue[Address]("id2203.project.address")
 
   net uponEvent {
     case NetworkMessage(source, _, _, Get(key)) => handle {
