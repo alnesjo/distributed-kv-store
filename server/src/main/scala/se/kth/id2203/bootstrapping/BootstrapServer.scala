@@ -1,11 +1,11 @@
-package se.kth.id2203.kvs.bootstrapping
+package se.kth.id2203.bootstrapping
 
 import java.util.UUID
 
 import se.kth.id2203.event.{Deliver, Send}
 import se.kth.id2203.port.PerfectLink
 import se.sics.kompics.network.Address
-import se.sics.kompics.timer.{CancelPeriodicTimeout, SchedulePeriodicTimeout, Timeout, Timer}
+import se.sics.kompics.timer.{CancelPeriodicTimeout, SchedulePeriodicTimeout, Timer}
 import se.sics.kompics.sl._
 import se.sics.kompics.{KompicsEvent, Start}
 
@@ -77,9 +77,3 @@ class BootstrapServer extends ComponentDefinition {
 
 }
 
-case class BootstrapTimeout(spt: SchedulePeriodicTimeout) extends Timeout(spt)
-
-case class Boot(assignment: NodeAssignment) extends KompicsEvent with Serializable
-
-case object Active extends KompicsEvent
-case object Ready extends KompicsEvent

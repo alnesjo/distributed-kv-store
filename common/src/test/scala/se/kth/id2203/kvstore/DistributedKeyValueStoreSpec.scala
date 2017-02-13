@@ -1,4 +1,4 @@
-package se.kth.id2203.kvs
+package se.kth.id2203.kvstore
 
 import org.scalatest._
 import scala.collection.mutable
