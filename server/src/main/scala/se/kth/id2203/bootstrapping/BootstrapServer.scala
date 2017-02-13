@@ -16,8 +16,8 @@ class BootstrapServer extends ComponentDefinition {
   val timer = requires[Timer]
   // Should probably be able to use some reliable broadcasting abstraction rather than a raw link
 
-  val self = config getValue("id2203.project.address", classOf[Address])
-  val bootThreshold = config getValue("id2203.project.bootThreshold", classOf[Int])
+  val self = config.getValue("id2203.project.address", classOf[Address])
+  val bootThreshold = config.getValue("id2203.project.bootThreshold", classOf[Int])
 
   var state: State = Collecting
   var timeoutId: UUID = ??? // What is the point of this?
