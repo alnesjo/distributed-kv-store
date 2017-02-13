@@ -32,7 +32,8 @@ package object link {
 
   }
 
-  case class NetworkAddress(address: InetAddress, port: Int) extends Address with Serializable with Comparable[NetworkAddress] {
+  case class NetworkAddress(address: InetAddress, port: Int) extends Address with Serializable
+    with Comparable[NetworkAddress] {
 
     val isa = new InetSocketAddress(address, port)
 
@@ -45,7 +46,10 @@ package object link {
     override def asSocket = isa
 
     override def compareTo(t: NetworkAddress) =
-      10*(isa.getAddress.toString compareTo t.isa.getAddress.toString) + (getPort compareTo t.getPort)
+      isa.getAddress.toString compareTo t.isa.getAddress.toString match {
+        case 0 => getPort compareTo t.getPort
+        case c => c
+      }
 
   }
 
