@@ -2,28 +2,29 @@ package se.kth.id2203.bootstrapping
 
 import java.util.UUID
 
-import se.kth.id2203.event.{Deliver, Send}
-import se.kth.id2203.port.PerfectLink
+import org.slf4j.LoggerFactory
+import se.kth.id2203.{BestEffortBroadcast, Broadcast, Deliver}
 import se.sics.kompics.network.Address
 import se.sics.kompics.timer.{CancelPeriodicTimeout, SchedulePeriodicTimeout, Timer}
 import se.sics.kompics.sl._
-import se.sics.kompics.{KompicsEvent, Start}
+import se.sics.kompics.Start
 
 class BootstrapServer extends ComponentDefinition {
 
+  val log = LoggerFactory.getLogger(classOf[BootstrapServer])
+
   val boot = provides(Bootstrapping)
-  val pl = requires(PerfectLink)
+  val beb = requires(BestEffortBroadcast)
   val timer = requires[Timer]
-  // Should probably be able to use some reliable broadcasting abstraction rather than a raw link
 
   val self = config.getValue("id2203.project.address", classOf[Address])
   val bootThreshold = config.getValue("id2203.project.bootThreshold", classOf[Int])
 
   var state: State = Collecting
-  var timeoutId: UUID = ??? // What is the point of this?
+  var timeoutId: UUID = _
   var active = Set[Address]()
   var ready = Set[Address]()
-  var initialAssignment: NodeAssignment = ??? // Do we have a notion of an empty assignment?
+  var initialAssignment: NodeAssignment = _
 
   ctrl uponEvent {
     case _: Start => handle {
@@ -59,14 +60,12 @@ class BootstrapServer extends ComponentDefinition {
   boot uponEvent {
     case InitialAssignments(assignment) => handle {
       initialAssignment = assignment
-      for (node <- active) {
-        trigger(Send(node, Boot(initialAssignment)), pl)
-      }
+      trigger(Broadcast(Boot(initialAssignment)), beb)
       ready += self
     }
   }
 
-  pl uponEvent {
+  beb uponEvent {
     case Deliver(src, Active) => handle {
       active += src
     }

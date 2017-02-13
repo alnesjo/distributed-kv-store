@@ -11,7 +11,7 @@ import scala.util.Random
 
 class VSOverlayManager extends ComponentDefinition {
 
-  val LOG = LoggerFactory.getLogger(classOf[VSOverlayManager])
+  val log = LoggerFactory.getLogger(classOf[VSOverlayManager])
   val rnd = new Random
 
   val route = provides(Routing)
@@ -24,19 +24,19 @@ class VSOverlayManager extends ComponentDefinition {
 
   boot uponEvent {
     case GetInitialAssignments(nodes: Set[Address]) => handle {
-      LOG.info("Generating LookupTable...")
+      log.info("Generating LookupTable...")
       val lut = LookupTable.generate(nodes)
-      LOG.debug("Generated assignments:\n{}", lut)
+      log.debug("Generated assignments:\n{}", lut)
       trigger(InitialAssignments(lut), boot)
     }
     case Booted(assignment) => handle {
       assignment match {
         case lut: LookupTable => {
-          LOG.info("Got NodeAssignment, overlay ready.")
+          log.info("Got NodeAssignment, overlay ready.")
           lookupTable = lut
         }
         case _ => {
-          LOG.error("Got invalid NodeAssignment type. Expected: LookupTable; Got: {}", assignment.getClass)
+          log.error("Got invalid NodeAssignment type. Expected: LookupTable; Got: {}", assignment.getClass)
         }
       }
     }
@@ -46,7 +46,7 @@ class VSOverlayManager extends ComponentDefinition {
     case RouteMessage(key, message) => handle {
       val partition = lookupTable.lookup(key)
       val dst = partition.toVector(rnd.nextInt(partition.size))
-      LOG.info("Routing message for key {} to {}", key, dst)
+      log.info("Routing message for key {} to {}", key, dst)
       trigger(NetworkMessage(self, dst, Transport.TCP, message), net)
     }
   }
@@ -54,11 +54,11 @@ class VSOverlayManager extends ComponentDefinition {
   net uponEvent {
     case NetworkMessage(src, _, _, Connect(id)) => handle {
       if (null != lookupTable) {
-        LOG.debug("Accepting connection request from {}", src)
+        log.debug("Accepting connection request from {}", src)
         val size = lookupTable.getNodes.size
         trigger(NetworkMessage(self, src, Transport.TCP, Ack(id, size)), net)
       } else {
-        LOG.info("Rejecting connection request from {}, as system is not ready, yet.", src)
+        log.info("Rejecting connection request from {}, as system is not ready, yet.", src)
       }
     }
   }

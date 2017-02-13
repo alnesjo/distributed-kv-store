@@ -1,11 +1,15 @@
 package se.kth.id2203.kvstore
 
+import org.slf4j.LoggerFactory
 import se.kth.id2203.link.NetworkMessage
 import se.kth.id2203.overlay.Routing
 import se.sics.kompics.network.{Address, Network, Transport}
 import se.sics.kompics.sl._
 
-class KeyValueStoreService extends ComponentDefinition {
+class StoreService extends ComponentDefinition {
+
+  val log = LoggerFactory.getLogger(classOf[StoreService])
+
   val net = requires[Network]
   val route = requires(Routing)
 
