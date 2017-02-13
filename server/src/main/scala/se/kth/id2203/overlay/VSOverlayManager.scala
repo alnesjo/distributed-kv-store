@@ -16,8 +16,8 @@ class VSOverlayManager extends ComponentDefinition {
 
   val route = provides(Routing)
   val boot = requires(Bootstrapping)
-  val net = requires(Network)
-  val timer = requires(Timer)
+  val net = requires[Network]
+  val timer = requires[Timer]
 
   val self = config.getValue("id2203.project.address", classOf[Address])
   var lookupTable: LookupTable = _
@@ -46,7 +46,7 @@ class VSOverlayManager extends ComponentDefinition {
     case RouteMessage(key, message) => handle {
       val partition = lookupTable.lookup(key)
       val dst = partition.toVector(rnd.nextInt(partition.size))
-      log.info("Routing message for key {} to {}", key, dst)
+      log.info("Routing message for key {} to {}", key, dst: Any)
       trigger(NetworkMessage(self, dst, Transport.TCP, message), net)
     }
   }
