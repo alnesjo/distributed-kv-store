@@ -1,22 +1,21 @@
-package se.kth.id2203
+package se.kth.id2203.failure
 
+import se.kth.id2203._
 import se.sics.kompics.Start
 import se.sics.kompics.network.Address
 import se.sics.kompics.sl._
 import se.sics.kompics.timer.{ScheduleTimeout, Timer}
 
-class HeartbeatFailureDetecor extends ComponentDefinition {
+class HeartbeatFailureDetector(epfdInit: Init[HeartbeatFailureDetecor]) extends ComponentDefinition {
 
   val epfd = provides(EventuallyPerfectFailureDetector)
   val pl = requires(PerfectLink)
   val timer = requires[Timer]
 
-  //configuration parameters
   val self = epfdInit match {case Init(s: Address) => s}
   val topology = cfg.getValue[List[Address]]("epfd.simulation.topology")
   val delta = cfg.getValue[Long]("epfd.simulation.delay")
 
-  //mutable state
   var period = cfg.getValue[Long]("epfd.simulation.delay")
   var alive = Set(cfg.getValue[List[Address]]("epfd.simulation.topology"): _*)
   var suspected = Set[Address]()
@@ -28,7 +27,6 @@ class HeartbeatFailureDetecor extends ComponentDefinition {
     trigger(scheduledTimeout -> timer)
   }
 
-  //EPFD event handlers
   ctrl uponEvent {
     case _: Start => handle {
       startTimer(period)
@@ -38,15 +36,12 @@ class HeartbeatFailureDetecor extends ComponentDefinition {
   timer uponEvent {
     case CheckTimeout(_) => handle {
       if (alive.intersect(suspected).nonEmpty) {
-        // Intersection between known alive and suspected processes is non-empty.
         suspected --= alive
       }
-
       seqnum += 1
-
       for (p <- topology) {
         if (!alive.contains(p) && !suspected.contains(p)) {
-          // We don't know that process p is alive, and process p is not suspected.
+          // We don't know if process p is alive, and process p is not suspected.
           // Therefore we should start suspecting process p.
           suspected += p
           trigger(Suspect(p) -> epfd)
