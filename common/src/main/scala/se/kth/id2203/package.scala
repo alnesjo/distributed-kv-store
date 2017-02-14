@@ -6,11 +6,10 @@ import se.sics.kompics.sl.Port
 
 package object id2203 {
 
-  case class Broadcast(payload: KompicsEvent) extends KompicsEvent
-
   case class Deliver(src: Address, payload: KompicsEvent) extends KompicsEvent
 
   case class Send(dst: Address, payload: KompicsEvent) extends KompicsEvent
+
 
   object FairLossLink extends Port {
     indication[Deliver]
@@ -27,6 +26,8 @@ package object id2203 {
     request[Send]
   }
 
+  case class Broadcast(payload: KompicsEvent) extends KompicsEvent
+
   object BestEffortBroadcast extends Port {
     indication[Deliver]
     request[Broadcast]
@@ -42,4 +43,12 @@ package object id2203 {
     request[Broadcast]
   }
 
+  case class Suspect(process: Address) extends KompicsEvent
+
+  case class Restore(process: Address) extends KompicsEvent
+
+  object EventuallyPerfectFailureDetector extends Port {
+    indication[Suspect]
+    indication[Restore]
+  }
 }
