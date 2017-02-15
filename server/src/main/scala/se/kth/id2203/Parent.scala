@@ -16,7 +16,7 @@ class Parent extends ComponentDefinition {
   val self = cfg.getValue[Address]("id2203.project.address")
   val other = cfg.readValue[Address]("id2203.project.bootstrap-address")
   val boot = create(other match {
-    case Some(address) =>
+    case Some(_) =>
       classOf[BootstrapClient]
     case None =>
       classOf[BootstrapServer]

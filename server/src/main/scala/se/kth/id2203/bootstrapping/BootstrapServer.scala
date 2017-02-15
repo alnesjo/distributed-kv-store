@@ -11,6 +11,11 @@ import se.sics.kompics.Start
 
 class BootstrapServer extends ComponentDefinition {
 
+  sealed trait State
+  case object Collecting extends State
+  case object Seeding extends State
+  case object Done extends State
+
   val log = LoggerFactory.getLogger(classOf[BootstrapServer])
 
   val boot = provides(Bootstrapping)
@@ -30,7 +35,7 @@ class BootstrapServer extends ComponentDefinition {
     case _: Start => handle {
       val period = 2 * (config getValue("id2203.project.keepAlivePeriod", classOf[Long]))
       val spt = new SchedulePeriodicTimeout(period, period)
-      spt.setTimeoutEvent(BootstrapTimeout(spt))
+      spt.setTimeoutEvent(new BootstrapTimeout(spt))
       trigger(spt, timer)
       timeoutId = spt.getTimeoutEvent.getTimeoutId
       active += self

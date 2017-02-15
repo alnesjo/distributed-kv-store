@@ -6,7 +6,7 @@ import se.sics.kompics.network.Address
 import se.sics.kompics.sl._
 import se.sics.kompics.timer.{ScheduleTimeout, Timer}
 
-class HeartbeatFailureDetector(epfdInit: Init[HeartbeatFailureDetecor]) extends ComponentDefinition {
+class HeartbeatFailureDetector(epfdInit: Init[HeartbeatFailureDetector]) extends ComponentDefinition {
 
   val epfd = provides(EventuallyPerfectFailureDetector)
   val pl = requires(PerfectLink)

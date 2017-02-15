@@ -21,20 +21,12 @@ package object bootstrapping {
     request[InitialAssignments]
   }
 
-  case class BootstrapTimeout(spt: SchedulePeriodicTimeout) extends Timeout(spt)
+  class BootstrapTimeout(spt: SchedulePeriodicTimeout) extends Timeout(spt)
 
   case class Boot(assignment: NodeAssignment) extends KompicsEvent with Serializable
 
   case object Active extends KompicsEvent
 
   case object Ready extends KompicsEvent
-
-  sealed trait State
-
-  case object Collecting extends State
-
-  case object Seeding extends State
-
-  case object Done extends State
 
 }
