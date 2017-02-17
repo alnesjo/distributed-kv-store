@@ -3,13 +3,13 @@ package se.kth.id2203.bootstrapping
 import java.util.UUID
 
 import org.slf4j.LoggerFactory
-import se.kth.id2203.{BestEffortBroadcast, PerfectLink, Send}
-import se.sics.kompics.{ClassMatchedHandler, Start}
+import se.kth.id2203.{PerfectLink, PL_Send}
+import se.sics.kompics.{Start}
 import se.sics.kompics.network.Address
 import se.sics.kompics.sl._
 import se.sics.kompics.timer.{SchedulePeriodicTimeout, Timer, CancelPeriodicTimeout}
 
-class BootstrapClient extends ComponentDefinition {
+class BootstrapSlave extends ComponentDefinition {
 
   sealed trait State
   case object Waiting extends State
@@ -17,7 +17,7 @@ class BootstrapClient extends ComponentDefinition {
 
   override def tearDown() = trigger(new CancelPeriodicTimeout(timeoutId) -> timer)
 
-  val log = LoggerFactory.getLogger(classOf[BootstrapClient])
+  val log = LoggerFactory.getLogger(classOf[BootstrapSlave])
 
   val boot = provides(Bootstrapping)
   val pl = requires(PerfectLink)
@@ -44,10 +44,10 @@ class BootstrapClient extends ComponentDefinition {
     case _: BootstrapTimeout => handle {
       state match {
         case Waiting => {
-          trigger(Send(server, Active) -> pl)
+          trigger(PL_Send(server, Active) -> pl)
         }
         case Started => {
-          trigger(Send(server, Ready) -> pl)
+          trigger(PL_Send(server, Ready) -> pl)
           suicide()
         }
       }
@@ -60,7 +60,7 @@ class BootstrapClient extends ComponentDefinition {
         log.info("{} Booting up.", self)
         trigger(Booted(assignment) -> boot)
         trigger(new CancelPeriodicTimeout(timeoutId) -> timer)
-        trigger(Send(server, Ready) -> pl)
+        trigger(PL_Send(server, Ready) -> pl)
         state = Started
       }
     }

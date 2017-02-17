@@ -11,10 +11,10 @@ import se.sics.kompics.sl.Port
 package object overlay {
 
   object Routing extends Port {
-    request[RouteMessage]
+    request[Route]
   }
 
-  case class RouteMessage(key: String, message: KompicsEvent) extends KompicsEvent
+  case class Route(key: Int, message: KompicsEvent) extends KompicsEvent
 
   case class Connect(id: UUID) extends KompicsEvent with Serializable
 

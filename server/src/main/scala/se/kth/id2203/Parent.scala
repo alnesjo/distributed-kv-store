@@ -1,6 +1,6 @@
 package se.kth.id2203
 
-import se.kth.id2203.bootstrapping.{Bootstrapping, BootstrapClient, BootstrapServer}
+import se.kth.id2203.bootstrapping.{Bootstrapping, BootstrapSlave, BootstrapMaster}
 import se.kth.id2203.kvstore.StoreService
 import se.kth.id2203.overlay.{Routing, VSOverlayManager}
 import se.sics.kompics.Init
@@ -17,9 +17,9 @@ class Parent extends ComponentDefinition {
   val other = cfg.readValue[Address]("id2203.project.bootstrap-address")
   val boot = create(other match {
     case Some(_) =>
-      classOf[BootstrapClient]
+      classOf[BootstrapSlave]
     case None =>
-      classOf[BootstrapServer]
+      classOf[BootstrapMaster]
   }, Init.NONE)
   val overlay = create(classOf[VSOverlayManager], Init.NONE)
   val store = create(classOf[StoreService], Init.NONE)

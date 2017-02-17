@@ -1,6 +1,6 @@
 package se.kth.id2203.link
 
-import se.kth.id2203.{Deliver, Send, PerfectLink}
+import se.kth.id2203.{PL_Deliver, PL_Send, PerfectLink}
 import se.sics.kompics.network.{Address, Network, Transport}
 import se.sics.kompics.sl._
 
@@ -15,14 +15,14 @@ class TcpLink(init: Init[TcpLink]) extends ComponentDefinition {
   }
 
   pl uponEvent {
-    case Send(dest, payload) => handle {
-      trigger(NetworkMessage(self, dest, Transport.TCP, payload), net)
+    case PL_Send(dest, payload) => handle {
+      trigger(NetworkMessage(self, dest, Transport.TCP, payload) -> net)
     }
   }
 
   net uponEvent {
     case NetworkMessage(src, _, _, payload) => handle {
-      trigger(Deliver(src, payload), pl)
+      trigger(PL_Deliver(src, payload) -> pl)
     }
   }
 

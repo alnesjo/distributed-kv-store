@@ -48,7 +48,7 @@ package object link {
     override def compareTo(t: NetworkAddress) =
       isa.getAddress.toString compareTo t.isa.getAddress.toString match {
         case 0 => getPort compareTo t.getPort
-        case c => c
+        case b => b
       }
 
   }

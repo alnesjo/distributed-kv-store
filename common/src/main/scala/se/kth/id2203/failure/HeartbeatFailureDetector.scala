@@ -44,12 +44,12 @@ class HeartbeatFailureDetector(epfdInit: Init[HeartbeatFailureDetector]) extends
           // We don't know if process p is alive, and process p is not suspected.
           // Therefore we should start suspecting process p.
           suspected += p
-          trigger(Suspect(p) -> epfd)
+          trigger(EP_Suspect(p) -> epfd)
         } else if (alive.contains(p) && suspected.contains(p)) {
           suspected -= p
-          trigger(Restore(p) -> epfd)
+          trigger(EP_Restore(p) -> epfd)
         }
-        trigger(Send(p, HeartbeatRequest(seqnum)) -> pl)
+        trigger(PL_Send(p, HeartbeatRequest(seqnum)) -> pl)
       }
       alive = Set[Address]()
       startTimer(period)
@@ -57,10 +57,10 @@ class HeartbeatFailureDetector(epfdInit: Init[HeartbeatFailureDetector]) extends
   }
 
   pl uponEvent {
-    case Deliver(src, HeartbeatRequest(seq)) => handle {
-      trigger(Send(src, HeartbeatReply(seq)) -> pl)
+    case PL_Deliver(src, HeartbeatRequest(seq)) => handle {
+      trigger(PL_Send(src, HeartbeatReply(seq)) -> pl)
     }
-    case Deliver(src, HeartbeatReply(seq)) => handle {
+    case PL_Deliver(src, HeartbeatReply(seq)) => handle {
       alive += src
     }
   }

@@ -31,19 +31,17 @@ class VSOverlayManager extends ComponentDefinition {
     }
     case Booted(assignment) => handle {
       assignment match {
-        case lut: LookupTable => {
+        case lut: LookupTable =>
           log.info("Got NodeAssignment, overlay ready.")
           lookupTable = lut
-        }
-        case _ => {
+        case _ =>
           log.error("Got invalid NodeAssignment type. Expected: LookupTable; Got: {}", assignment.getClass)
-        }
       }
     }
   }
 
   route uponEvent {
-    case RouteMessage(key, message) => handle {
+    case Route(key, message) => handle {
       val partition = lookupTable.lookup(key)
       val dst = partition.toVector(rnd.nextInt(partition.size))
       log.info("Routing message for key {} to {}", key, dst: Any)

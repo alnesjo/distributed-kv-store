@@ -1,6 +1,6 @@
 package se.kth.id2203.broadcast
 
-import se.kth.id2203.{Broadcast, Deliver, Send, BestEffortBroadcast, PerfectLink}
+import se.kth.id2203._
 import se.sics.kompics.network.Address
 import se.sics.kompics.sl._
 
@@ -14,16 +14,16 @@ class BasicBroadcast(init: Init[BasicBroadcast]) extends ComponentDefinition {
   }
 
   beb uponEvent {
-    case Broadcast(payload) => handle {
+    case BEB_Broadcast(payload) => handle {
       for (p <- topology) {
-        trigger(Send(p,payload), pl)
+        trigger(PL_Send(p,payload) -> pl)
       }
     }
   }
 
   pl uponEvent {
-    case Deliver(src, payload) => handle {
-      trigger(Deliver(src, payload), beb)
+    case PL_Deliver(src, payload) => handle {
+      trigger(BEB_Deliver(src, payload) -> beb)
     }
   }
 
