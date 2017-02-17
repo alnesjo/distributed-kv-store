@@ -7,18 +7,20 @@ import scala.collection.mutable
 object LookupTable {
   def generate(nodes: Set[Address]): LookupTable = {
     val lut = new LookupTable
-    for (n <- nodes) {
-      lut.partitions addBinding ("initial", n)
+    val d = 3 // Replication degree
+    val (k, n) = nodes.map(a => (a.hashCode(), a)).toList.unzip
+    for ((x, y) <- (0 to d).map(i => k zip ((n drop i) ++ (n take i))).reduce(_ ++ _)) {
+      lut.partitions addBinding (x, y)
     }
-    return lut
+    lut
   }
 }
 
 class LookupTable extends NodeAssignment {
 
-  val partitions = new mutable.HashMap[String, mutable.Set[Address]] with mutable.MultiMap[String, Address]
+  private val partitions = new mutable.HashMap[Int, mutable.Set[Address]] with mutable.MultiMap[Int, Address]
 
-  def lookup(key: String) = partitions.get(key) match {
+  def lookup(key: Int) = partitions.get(key) match {
     case Some(_) => partitions(key)
     case None => partitions.values.last
   }
