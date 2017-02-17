@@ -61,4 +61,28 @@ package object id2203 {
     indication[EP_Suspect]
     indication[EP_Restore]
   }
+
+  case class AR_Read_Invoke() extends KompicsEvent
+  case class AR_Read_Respond(value: Option[Any]) extends KompicsEvent
+  case class AR_Write_Invoke(value: Any) extends KompicsEvent
+  case class AR_Write_Respond() extends KompicsEvent
+
+  object AtomicRegister extends Port {
+    request[AR_Read_Invoke]
+    request[AR_Write_Invoke]
+    indication[AR_Read_Respond]
+    indication[AR_Write_Respond]
+  }
+
+  case class AS_Read_Invoke(register: Any) extends KompicsEvent
+  case class AS_Read_Respond(value: Option[Any]) extends KompicsEvent
+  case class AS_Write_Invoke(register: Any, value: Any) extends KompicsEvent
+  case class AS_Write_Respond() extends KompicsEvent
+
+  object AtomicStore extends Port {
+    request[AS_Read_Invoke]
+    request[AS_Write_Invoke]
+    indication[AS_Read_Respond]
+    indication[AS_Write_Respond]
+  }
 }

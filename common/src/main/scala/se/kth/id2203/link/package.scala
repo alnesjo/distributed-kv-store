@@ -45,11 +45,10 @@ package object link {
 
     override def asSocket = isa
 
-    override def compareTo(t: NetworkAddress) =
-      isa.getAddress.toString compareTo t.isa.getAddress.toString match {
-        case 0 => getPort compareTo t.getPort
-        case b => b
-      }
+    override def compareTo(t: NetworkAddress) = isa.getAddress.toString compareTo t.isa.getAddress.toString match {
+      case 0 => getPort compareTo t.getPort
+      case b => b
+    }
 
   }
 

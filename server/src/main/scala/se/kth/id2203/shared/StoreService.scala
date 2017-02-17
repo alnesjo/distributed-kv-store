@@ -1,4 +1,4 @@
-package se.kth.id2203.kvstore
+package se.kth.id2203.shared
 
 import org.slf4j.LoggerFactory
 import se.kth.id2203.link.NetworkMessage

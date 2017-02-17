@@ -1,7 +1,7 @@
 package se.kth.id2203
 
 import se.kth.id2203.bootstrapping.{Bootstrapping, BootstrapSlave, BootstrapMaster}
-import se.kth.id2203.kvstore.StoreService
+import se.kth.id2203.shared.StoreService
 import se.kth.id2203.overlay.{Routing, VSOverlayManager}
 import se.sics.kompics.Init
 import se.sics.kompics.network.{Address, Network}

@@ -2,16 +2,13 @@ package se.kth.id2203
 
 import se.sics.kompics.KompicsEvent
 
-package object kvstore {
+package object shared {
 
-  case class GetInvocation(key: Int) extends KompicsEvent
-  case class GetResponse(value: String) extends KompicsEvent
+  case class READ(rid: Int) extends KompicsEvent
+  case class VALUE(rid: Int, ts: Int, wr: Int, value: Option[Any]) extends KompicsEvent
+  case class WRITE(rid: Int, ts: Int, wr: Int, writeVal: Option[Any]) extends KompicsEvent
+  case class ACK(rid: Int) extends KompicsEvent
 
-  case class PutInvocation(key: Int, value: String) extends KompicsEvent
-  case class PutResponse(status: Status) extends KompicsEvent
-
-  sealed trait Status
-  case object Success extends Status
-  case object Failure extends Status
+  implicit def addComparators[A](x: A)(implicit o: math.Ordering[A]): o.Ops = o.mkOrderingOps(x)
 
 }
