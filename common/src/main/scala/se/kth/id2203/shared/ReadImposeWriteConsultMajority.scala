@@ -31,7 +31,7 @@ class ReadImposeWriteConsultMajority(init: Init[ReadImposeWriteConsultMajority])
       acks = 0
       readlist = mutable.Map.empty
       reading = true
-      trigger(BEB_Broadcast(READ(rid)) -> beb)
+      trigger(BEB_Broadcast(Read(rid)) -> beb)
     };
     case AR_Write_Invoke(wval) => handle {
       println(s"Process $self requests to write $wval")
@@ -39,27 +39,27 @@ class ReadImposeWriteConsultMajority(init: Init[ReadImposeWriteConsultMajority])
       writeval = Some(wval)
       acks = 0
       readlist = mutable.Map.empty
-      trigger(BEB_Broadcast(READ(rid)) -> beb)
+      trigger(BEB_Broadcast(Read(rid)) -> beb)
     }
   }
 
   beb uponEvent {
-    case BEB_Deliver(src, READ(r)) => handle {
+    case BEB_Deliver(src, Read(r)) => handle {
       println(s"Process $self sent VALUE to $src")
-      trigger(PL_Send(src, VALUE(r, ts, wr, value)) -> pl)
+      trigger(PL_Send(src, Value(r, ts, wr, value)) -> pl)
     }
-    case BEB_Deliver(src, w: WRITE) => handle {
+    case BEB_Deliver(src, w: Write) => handle {
       if ((w.ts, w.wr) > (ts, wr)) {
         ts = w.ts
         wr = w.wr
         value = w.writeVal
       }
-      trigger(PL_Send(src, ACK(w.rid)) -> pl)
+      trigger(PL_Send(src, Ack(w.rid)) -> pl)
     }
   }
 
   pl uponEvent {
-    case PL_Deliver(src, v: VALUE) => handle {
+    case PL_Deliver(src, v: Value) => handle {
       if (v.rid == rid) {
         readlist.put(src, (v.ts, v.wr, v.value))
         if (readlist.size > n/2) {
@@ -77,11 +77,11 @@ class ReadImposeWriteConsultMajority(init: Init[ReadImposeWriteConsultMajority])
             writeval
           }
           println(s"Process $self broadcasts WRITE")
-          trigger(BEB_Broadcast(WRITE(rid, maxts, rr, bcastval)) -> beb)
+          trigger(BEB_Broadcast(Write(rid, maxts, rr, bcastval)) -> beb)
         }
       }
     }
-    case PL_Deliver(src, v: ACK) => handle {
+    case PL_Deliver(src, v: Ack) => handle {
       if (v.rid == rid) {
         println(s"Process $self recieved ACK from $src")
         acks += 1
@@ -99,4 +99,5 @@ class ReadImposeWriteConsultMajority(init: Init[ReadImposeWriteConsultMajority])
       }
     }
   }
+
 }
