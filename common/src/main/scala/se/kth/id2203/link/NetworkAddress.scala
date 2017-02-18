@@ -11,7 +11,7 @@ class NetworkAddress(address: InetAddress, port: Int) extends Address with Seria
 
   override def getIp = isa.getAddress
 
-  override def sameHostAs(other: Address) = isa equals other.asSocket
+  override def sameHostAs(other: Address) = asSocket equals other.asSocket
 
   override def getPort = isa.getPort
 

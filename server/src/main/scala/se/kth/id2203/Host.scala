@@ -13,7 +13,7 @@ class Host extends ComponentDefinition {
 
   val timer = create(classOf[JavaTimer], Init.NONE)
   val net = create(classOf[NettyNetwork], new NettyInit(self))
-  val parent = create(classOf[Parent], Init.NONE)
+  val parent = create(classOf[Parent], Parent.Init(self))
 
   connect[Timer](timer -> parent)
   connect[Network](net -> parent)

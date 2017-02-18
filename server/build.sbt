@@ -4,6 +4,8 @@ version := "1.0"
 
 scalaVersion := "2.11.8"
 
+mainClass in Compile := Some("se.kth.id2203.Server")
+
 resolvers += "Kompics Releases" at "http://kompics.sics.se/maven/repository/"
 resolvers += "Kompics Snapshots" at "http://kompics.sics.se/maven/snapshotrepository/"
 resolvers += "Artima Maven Repository" at "http://repo.artima.com/releases"

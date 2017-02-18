@@ -44,7 +44,7 @@ import se.sics.kompics.network.Address;
  *
  * @author Lars Kroll <lkroll@kth.se>
  */
-public class Main {
+public class Server {
 
     static final NetworkAddressConverter NAC = new NetworkAddressConverter();
 

@@ -74,15 +74,4 @@ package object id2203 {
     indication[AR_Write_Respond]
   }
 
-  case class AS_Read_Invoke(register: Any) extends KompicsEvent
-  case class AS_Read_Respond(value: Option[Any]) extends KompicsEvent
-  case class AS_Write_Invoke(register: Any, value: Any) extends KompicsEvent
-  case class AS_Write_Respond() extends KompicsEvent
-
-  object AtomicStore extends Port {
-    request[AS_Read_Invoke]
-    request[AS_Write_Invoke]
-    indication[AS_Read_Respond]
-    indication[AS_Write_Respond]
-  }
 }

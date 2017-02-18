@@ -25,7 +25,7 @@ class LookupTable extends NodeAssignment {
     case None => partitions.values.last
   }
 
-  def getNodes = partitions.values
+  def getNodes = partitions.values.reduce(_ ++ _)
 
   override def toString = ???
 

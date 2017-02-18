@@ -9,12 +9,21 @@ import se.sics.kompics.timer.{CancelPeriodicTimeout, SchedulePeriodicTimeout, Ti
 import se.sics.kompics.sl._
 import se.sics.kompics.Start
 
-class BootstrapMaster extends ComponentDefinition {
+object BootstrapMaster {
+
+  case class Init(self: Address,
+                  bootThreshold: Int,
+                  keepAlivePeriod: Int)
+    extends se.sics.kompics.sl.Init[BootstrapMaster]
 
   sealed trait State
   case object Collecting extends State
   case object Seeding extends State
   case object Done extends State
+
+}
+
+class BootstrapMaster(init: BootstrapMaster.Init) extends ComponentDefinition {
 
   val log = LoggerFactory.getLogger(classOf[BootstrapMaster])
 
@@ -22,10 +31,11 @@ class BootstrapMaster extends ComponentDefinition {
   val pl = requires(PerfectLink)
   val timer = requires[Timer]
 
-  val self = cfg.getValue[Address]("id2203.project.address")
-  val bootThreshold = cfg.getValue[Int]("id2203.project.bootThreshold")
+  val self = init.self
+  val bootThreshold = init.bootThreshold
+  val period = 2*init.keepAlivePeriod
 
-  var state: State = Collecting
+  var state: BootstrapMaster.State = BootstrapMaster.Collecting
   var timeoutId: UUID = _
   var active = Set[Address]()
   var ready = Set[Address]()
@@ -33,7 +43,6 @@ class BootstrapMaster extends ComponentDefinition {
 
   ctrl uponEvent {
     case _: Start => handle {
-      val period = 2 * (config getValue("id2203.project.keepAlivePeriod", classOf[Long]))
       val spt = new SchedulePeriodicTimeout(period, period)
       spt.setTimeoutEvent(new BootstrapTimeout(spt))
       trigger(spt, timer)
@@ -45,17 +54,17 @@ class BootstrapMaster extends ComponentDefinition {
   timer uponEvent {
     case _: BootstrapTimeout => handle {
       state match {
-        case Collecting =>
+        case BootstrapMaster.Collecting =>
           if (active.size >= bootThreshold) {
-            state = Seeding
+            state = BootstrapMaster.Seeding
             trigger(GetInitialAssignments(active) -> boot)
           }
-        case Seeding =>
+        case BootstrapMaster.Seeding =>
           if (ready.size >= bootThreshold) {
             trigger(Booted(initialAssignment) -> boot)
-            state = Done
+            state = BootstrapMaster.Done
           }
-        case Done =>
+        case BootstrapMaster.Done =>
           trigger(new CancelPeriodicTimeout(timeoutId) -> timer)
           suicide()
       }

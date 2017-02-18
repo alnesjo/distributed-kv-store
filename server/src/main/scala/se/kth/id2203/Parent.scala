@@ -1,30 +1,43 @@
 package se.kth.id2203
 
-import se.kth.id2203.bootstrapping.{Bootstrapping, BootstrapSlave, BootstrapMaster}
-import se.kth.id2203.overlay.{Routing, VSOverlayManager}
+import se.kth.id2203.bootstrapping.{BootstrapMaster, BootstrapSlave, Bootstrapping}
+import se.kth.id2203.link.TcpLink
+import se.kth.id2203.overlay.VSOverlayManager
 import se.sics.kompics.Init
 import se.sics.kompics.network.{Address, Network}
 import se.sics.kompics.sl._
 import se.sics.kompics.timer.Timer
 
-class Parent extends ComponentDefinition {
+object Parent {
+
+  case class Init(self: Address) extends se.sics.kompics.sl.Init[Parent]
+
+}
+
+class Parent(init: Parent.Init) extends ComponentDefinition {
 
   val net = requires[Network]
   val timer = requires[Timer]
 
-  val self = cfg.getValue[Address]("id2203.project.address")
-  val other = cfg.readValue[Address]("id2203.project.bootstrap-address")
-  val boot = create(other match {
+  val self = init.self
+  val master = cfg.readValue[Address]("id2203.project.bootstrap-address")
+  val bootThreshold = cfg.getValue[Int]("id2203.project.bootThreshold")
+  val keepAlivePeriod = cfg.getValue[Long]("id2203.project.keepAlivePeriod")
+
+
+  val pl = create(classOf[TcpLink], TcpLink.Init(self))
+  val boot = master match {
     case Some(_) =>
-      classOf[BootstrapSlave]
+      create(classOf[BootstrapSlave], Init.NONE)
     case None =>
-      classOf[BootstrapMaster]
-  }, Init.NONE)
+      create(classOf[BootstrapMaster], BootstrapMaster.Init(self, bootThreshold, keepAlivePeriod))
+  }
   val overlay = create(classOf[VSOverlayManager], Init.NONE)
   //val store = create(classOf[KeyValueStore], Init.NONE)
 
+  connect[Network](net -> pl)
   connect[Timer](timer -> boot)
-  connect[Network](net -> boot)
+  connect(PerfectLink)(pl -> boot)
   connect(Bootstrapping)(boot -> overlay)
   connect[Network](net -> overlay)
   //connect(Routing)(overlay -> store)
