@@ -4,14 +4,13 @@ import se.kth.id2203.{PL_Deliver, PL_Send, PerfectLink}
 import se.sics.kompics.network.{Address, Network, Transport}
 import se.sics.kompics.sl._
 
-
 class TcpLink(init: Init[TcpLink]) extends ComponentDefinition {
 
   val pl = provides(PerfectLink)
   val net = requires[Network]
 
   val self = init match {
-    case Init(self: Address) => self
+    case Init(s: Address) => s
   }
 
   pl uponEvent {

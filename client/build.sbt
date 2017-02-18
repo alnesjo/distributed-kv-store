@@ -14,3 +14,4 @@ libraryDependencies += "se.sics.kompics.basic" % "kompics-component-netty-networ
 libraryDependencies += "se.sics.kompics.basic" % "kompics-component-java-timer" % "0.9.2-SNAPSHOT"
 libraryDependencies += "org.scalactic" %% "scalactic" % "3.0.1"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+libraryDependencies += "commons-cli" % "commons-cli" % "1.3.1"

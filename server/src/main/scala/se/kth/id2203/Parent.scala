@@ -1,7 +1,6 @@
 package se.kth.id2203
 
 import se.kth.id2203.bootstrapping.{Bootstrapping, BootstrapSlave, BootstrapMaster}
-import se.kth.id2203.shared.StoreService
 import se.kth.id2203.overlay.{Routing, VSOverlayManager}
 import se.sics.kompics.Init
 import se.sics.kompics.network.{Address, Network}
@@ -22,13 +21,13 @@ class Parent extends ComponentDefinition {
       classOf[BootstrapMaster]
   }, Init.NONE)
   val overlay = create(classOf[VSOverlayManager], Init.NONE)
-  val store = create(classOf[StoreService], Init.NONE)
+  //val store = create(classOf[KeyValueStore], Init.NONE)
 
   connect[Timer](timer -> boot)
   connect[Network](net -> boot)
   connect(Bootstrapping)(boot -> overlay)
   connect[Network](net -> overlay)
-  connect(Routing)(overlay -> store)
-  connect[Network](net -> store)
+  //connect(Routing)(overlay -> store)
+  //connect[Network](net -> store)
 
 }
