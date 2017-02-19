@@ -22,4 +22,6 @@ class NetworkAddress(address: InetAddress, port: Int) extends Address with Seria
     case b => b
   }
 
+  override def toString: String = s"$address:$port"
+
 }

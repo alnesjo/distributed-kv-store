@@ -11,13 +11,10 @@ import se.sics.kompics.timer.java.JavaTimer
 class ClientHost extends ComponentDefinition {
 
   val self = cfg.getValue[Address]("id2203.project.address")
-  val master = cfg.readValue[Address]("id2203.project.bootstrap-address")
 
   val timer = create(classOf[JavaTimer], Init.NONE)
   val net = create(classOf[NettyNetwork], new NettyInit(self))
-  val parent = master match {
-    case Some(address) => create(classOf[ClientService], ClientService.Init(self, address))
-  }
+  val parent = create(classOf[ClientService], ClientService.Init(self))
 
   connect[Timer](timer -> parent)
   connect[Network](net -> parent)

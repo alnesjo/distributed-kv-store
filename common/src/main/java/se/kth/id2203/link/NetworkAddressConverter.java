@@ -30,10 +30,10 @@ import se.sics.kompics.config.Conversions;
 import se.sics.kompics.config.Converter;
 import se.sics.kompics.network.Address;
 
-public class NetworkAddressConverter implements Converter<Address> {
+public class NetworkAddressConverter implements Converter<NetworkAddress> {
 
     @Override
-    public Address convert(Object o) {
+    public NetworkAddress convert(Object o) {
         if (o instanceof Map) {
             try {
                 Map m = ((Map) o);
@@ -59,7 +59,7 @@ public class NetworkAddressConverter implements Converter<Address> {
     }
 
     @Override
-    public Class<Address> type() {
-        return Address.class;
+    public Class<NetworkAddress> type() {
+        return NetworkAddress.class;
     }
 }

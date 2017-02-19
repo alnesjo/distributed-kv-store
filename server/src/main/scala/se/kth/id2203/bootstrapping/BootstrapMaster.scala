@@ -33,7 +33,7 @@ class BootstrapMaster(init: BootstrapMaster.Init) extends ComponentDefinition {
 
   val self = init.self
   val bootThreshold = init.bootThreshold
-  val period = 2*init.keepAlivePeriod
+  val period = 2 * init.keepAlivePeriod
 
   var state: BootstrapMaster.State = BootstrapMaster.Collecting
   var timeoutId: UUID = _
@@ -43,6 +43,8 @@ class BootstrapMaster(init: BootstrapMaster.Init) extends ComponentDefinition {
 
   ctrl uponEvent {
     case _: Start => handle {
+      println(s"Boostrapping master $self initiated bootstrapping procedure...")
+      println("Collecting...")
       val spt = new SchedulePeriodicTimeout(period, period)
       spt.setTimeoutEvent(new BootstrapTimeout(spt))
       trigger(spt, timer)
@@ -56,11 +58,13 @@ class BootstrapMaster(init: BootstrapMaster.Init) extends ComponentDefinition {
       state match {
         case BootstrapMaster.Collecting =>
           if (active.size >= bootThreshold) {
+            println("Seeding...")
             state = BootstrapMaster.Seeding
             trigger(GetInitialAssignments(active) -> boot)
           }
         case BootstrapMaster.Seeding =>
           if (ready.size >= bootThreshold) {
+            println("Done.")
             trigger(Booted(initialAssignment) -> boot)
             state = BootstrapMaster.Done
           }
@@ -73,6 +77,7 @@ class BootstrapMaster(init: BootstrapMaster.Init) extends ComponentDefinition {
 
   boot uponEvent {
     case InitialAssignments(assignment) => handle {
+      println("Seeding...")
       initialAssignment = assignment
       for (n <- active) trigger(PL_Send(n, Boot(initialAssignment)) -> pl)
       ready += self
@@ -81,9 +86,11 @@ class BootstrapMaster(init: BootstrapMaster.Init) extends ComponentDefinition {
 
   pl uponEvent {
     case PL_Deliver(src, Active) => handle {
+      println("Collecting...")
       active += src
     }
     case PL_Deliver(src, Ready) => handle {
+      println("Seeding...")
       ready += src
     }
   }

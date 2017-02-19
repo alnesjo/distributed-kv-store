@@ -18,13 +18,13 @@ class TcpLink(init: TcpLink.Init) extends ComponentDefinition {
   val self = init.self
 
   pl uponEvent {
-    case PL_Send(dest, payload) => handle {
-      trigger(NetworkMessage(self, dest, Transport.TCP, payload) -> net)
+    case PL_Send(dst, payload) => handle {
+      trigger(NetworkMessage(self, dst, Transport.TCP, payload) -> net)
     }
   }
 
   net uponEvent {
-    case NetworkMessage(src, _, _, payload) => handle {
+    case NetworkMessage(src, `self`, Transport.TCP, payload) => handle {
       trigger(PL_Deliver(src, payload) -> pl)
     }
   }
