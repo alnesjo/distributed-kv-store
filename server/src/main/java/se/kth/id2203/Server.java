@@ -62,7 +62,7 @@ public class Server {
             cmd = cliparser.parse(opts, args);
             // avoid constant conversion of the address by converting once and reassigning
             Config.Impl c = (Config.Impl) Kompics.getConfig();
-            Address self = c.getValue("id2203.project.address", Address.class);
+            Address self = c.getValue("id2203.project.address", NetworkAddress.class);
             Config.Builder cb = c.modify(UUID.randomUUID());
             if (cmd.hasOption("p") || cmd.hasOption("i")) {
                 String ip = self.asSocket().getHostString();
@@ -87,7 +87,6 @@ public class Server {
             }
             ConfigUpdate cu = cb.finalise();
             c.apply(cu, ValueMerger.NONE);
-
             Kompics.createAndStart(ServerHost.class);
         } catch (ParseException ex) {
             System.err.println("Invalid commandline options: " + ex.getMessage());

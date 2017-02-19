@@ -3,13 +3,19 @@ package se.kth.id2203.bootstrapping
 import java.util.UUID
 
 import org.slf4j.LoggerFactory
-import se.kth.id2203.{PerfectLink, PL_Send}
-import se.sics.kompics.{Start}
-import se.sics.kompics.network.Address
+import se.kth.id2203.link.NetworkMessage
+import se.kth.id2203.{PL_Deliver, PL_Send, PerfectLink}
+import se.sics.kompics.Start
+import se.sics.kompics.network.{Address, Network, Transport}
 import se.sics.kompics.sl._
-import se.sics.kompics.timer.{SchedulePeriodicTimeout, Timer, CancelPeriodicTimeout}
+import se.sics.kompics.timer.{CancelPeriodicTimeout, SchedulePeriodicTimeout, Timer}
 
-class BootstrapSlave extends ComponentDefinition {
+object BootstrapSlave {
+
+  case class Init(self: Address, master: Address, keepAlivePeriod: Long) extends se.sics.kompics.Init[BootstrapSlave]
+}
+
+class BootstrapSlave(init: BootstrapSlave.Init) extends ComponentDefinition {
 
   sealed trait State
   case object Waiting extends State
@@ -17,22 +23,21 @@ class BootstrapSlave extends ComponentDefinition {
 
   override def tearDown() = trigger(new CancelPeriodicTimeout(timeoutId) -> timer)
 
-  val log = LoggerFactory.getLogger(classOf[BootstrapSlave])
-
   val boot = provides(Bootstrapping)
-  val pl = requires(PerfectLink)
+  //val pl = requires(PerfectLink)
+  val net = requires[Network]
   val timer = requires[Timer]
 
-  val self = cfg.getValue[Address]("id2203.project.address")
-  val server = cfg.getValue[Address]("id2203.project.bootstrap-address")
+  val self = init.self
+  val master = init.master
+  val period = 2 * init.keepAlivePeriod
 
   var state: State = Waiting
   var timeoutId: UUID = _
 
   ctrl uponEvent {
     case _: Start => handle {
-      log.debug("Starting bootstrap client on {}", self)
-      val period = 2 * (config getValue("id2203.project.keepAlivePeriod", classOf[Long]))
+      println(s"Boostrapping slave $self initiated bootstrapping procedure...")
       val spt = new SchedulePeriodicTimeout(period, period)
       spt.setTimeoutEvent(new BootstrapTimeout(spt))
       trigger(spt -> timer)
@@ -44,23 +49,30 @@ class BootstrapSlave extends ComponentDefinition {
     case _: BootstrapTimeout => handle {
       state match {
         case Waiting => {
-          trigger(PL_Send(server, Active) -> pl)
+          println("Waiting for master...")
+          //trigger(PL_Send(master, Active) -> pl)
+          trigger(NetworkMessage(self, master, Transport.TCP, Active) -> net)
         }
         case Started => {
-          trigger(PL_Send(server, Ready) -> pl)
+          println("Ready to boot.")
+          //trigger(PL_Send(master, Ready) -> pl)
+          trigger(NetworkMessage(self, master, Transport.TCP, Ready) -> net)
           suicide()
         }
       }
     }
   }
 
-  pl uponEvent {
-    case Boot(assignment: NodeAssignment) => handle {
+  //pl uponEvent {
+  net uponEvent {
+    //case PL_Deliver(_, Boot(assignment: NodeAssignment)) => handle {
+    case NetworkMessage(_, _, _, Boot(assignment: NodeAssignment)) => handle {
       if (state == Waiting) {
-        log.info("{} Booting up.", self)
+        println(s"Received  $self...")
         trigger(Booted(assignment) -> boot)
         trigger(new CancelPeriodicTimeout(timeoutId) -> timer)
-        trigger(PL_Send(server, Ready) -> pl)
+        //trigger(PL_Send(master, Ready) -> pl)
+        trigger(NetworkMessage(self, master, Transport.TCP, Ready) -> net)
         state = Started
       }
     }

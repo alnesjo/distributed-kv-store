@@ -6,8 +6,7 @@ import java.util.concurrent.Future
 
 import com.google.common.base.Optional
 import com.google.common.util.concurrent.SettableFuture
-import org.slf4j.LoggerFactory
-import se.kth.id2203.link.{NetworkAddress, NetworkMessage}
+import se.kth.id2203.link.NetworkMessage
 import se.kth.id2203.overlay.{Connect, Route}
 import se.sics.kompics.{Kompics, KompicsEvent, Start}
 import se.sics.kompics.network.{Address, Network, Transport}
@@ -16,27 +15,25 @@ import se.sics.kompics.timer.{ScheduleTimeout, Timeout, Timer}
 
 object ClientService {
 
-  case class Init(self: Address, master: Address) extends se.sics.kompics.Init[ClientService]
+  case class Init(self: Address) extends se.sics.kompics.Init[ClientService]
 
 }
 
 class ClientService(init: ClientService.Init) extends ComponentDefinition {
 
-  val log = LoggerFactory.getLogger(classOf[ClientService])
-
   val timer = requires[Timer]
   val net = requires[Network]
 
   val self = init.self
-  val master = init.master
+  val master = cfg.getValue[Address]("id2203.project.bootstrap-address")
+  val timeout = 2 * cfg.getValue[Long]("id2203.project.keepAlivePeriod")
 
   var connected: Optional[Connect.Ack] = Optional.absent()
   val pending = new util.TreeMap[UUID, SettableFuture[OperationRespond]]
 
   ctrl uponEvent {
     case _: Start => handle {
-      log.debug("Starting client on {}. Waiting to connect...", self)
-      val timeout: Long = config.getValue("id2203.project.keepAlivePeriod", classOf[Long]) * 2
+      println(s"Starting client on $self. Waiting to connect...")
       val st: ScheduleTimeout = new ScheduleTimeout(timeout)
       st.setTimeoutEvent(new ConnectTimeout(st))
       trigger(NetworkMessage(self, master, Transport.TCP, new Connect(st.getTimeoutEvent.getTimeoutId)) -> net)
@@ -45,28 +42,28 @@ class ClientService(init: ClientService.Init) extends ComponentDefinition {
   }
   net uponEvent {
     case NetworkMessage(_, _, _, ack@Connect.Ack(id, clusterSize)) => handle {
-      log.info("Client connected to {}, cluster size is {}", master, clusterSize)
+      println(s"Client connected to $master, cluster size is $clusterSize")
       connected = Optional.of(ack)
       val c: Console = new Console(ClientService.this)
       val tc: Thread = new Thread(c)
       tc.start()
     }
     case NetworkMessage(_, _, _, op@OperationRespond(id, status)) => handle {
-      log.debug("Got OperationRespond: {}", op)
+      println(s"Got OperationRespond: $op")
       val sf: SettableFuture[OperationRespond] = pending.remove(id)
       if (sf != null) sf.set(op)
-      else log.warn("ID {} was not pending! Ignoring response.", id)
+      else println(s"ID $id was not pending! Ignoring response.")
     }
   }
   timer uponEvent {
     case event: ConnectTimeout => handle {
       if (!connected.isPresent) {
-        log.error("Connection to server {} did not succeed. Shutting down...", master)
+        println(s"Connection to server $master did not succeed. Shutting down...")
         Kompics.asyncShutdown()
       } else {
         val cack = connected.get
         if (!(cack.id == event.getTimeoutId)) {
-          log.error("Received wrong response id earlier! System may be inconsistent. Shutting down...", master)
+          println("Received wrong response id earlier! System may be inconsistent. Shutting down...")
           System.exit(1)
         }
       }

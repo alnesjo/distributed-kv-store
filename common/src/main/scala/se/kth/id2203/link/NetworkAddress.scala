@@ -4,8 +4,7 @@ import java.net.{InetAddress, InetSocketAddress}
 
 import se.sics.kompics.network.Address
 
-class NetworkAddress(address: InetAddress, port: Int) extends Address with Serializable
-  with Comparable[NetworkAddress] {
+class NetworkAddress(address: InetAddress, port: Int) extends Address with Comparable[NetworkAddress] {
 
   val isa = new InetSocketAddress(address, port)
 
@@ -21,5 +20,7 @@ class NetworkAddress(address: InetAddress, port: Int) extends Address with Seria
     case 0 => getPort compareTo t.getPort
     case b => b
   }
+
+  override def toString: String = s"$getIp:$getPort"
 
 }

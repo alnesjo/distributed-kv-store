@@ -4,14 +4,19 @@ import se.kth.id2203._
 import se.sics.kompics.network.Address
 import se.sics.kompics.sl._
 
-class BasicBroadcast(init: Init[BasicBroadcast]) extends ComponentDefinition {
+object BasicBroadcast {
+
+  case class Init(self: Address, topology: Set[Address]@unchecked) extends se.sics.kompics.Init[BasicBroadcast]
+
+}
+
+class BasicBroadcast(init: BasicBroadcast.Init) extends ComponentDefinition {
 
   val pl = requires(PerfectLink)
   val beb = provides(BestEffortBroadcast)
 
-  val (self, topology) = init match {
-    case Init(s: Address, t: Set[Address]@unchecked) => (s, t)
-  }
+  val self = init.self
+  val topology = init.topology
 
   beb uponEvent {
     case BEB_Broadcast(payload) => handle {

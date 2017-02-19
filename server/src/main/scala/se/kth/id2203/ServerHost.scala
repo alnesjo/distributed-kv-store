@@ -7,9 +7,16 @@ import se.sics.kompics.sl._
 import se.sics.kompics.timer.Timer
 import se.sics.kompics.timer.java.JavaTimer
 
+object ServerHost {
+
+  case class Init() extends se.sics.kompics.Init[ServerHost]
+
+}
+
 class ServerHost extends ComponentDefinition {
 
   val self = cfg.getValue[Address]("id2203.project.address")
+
 
   val timer = create(classOf[JavaTimer], Init.NONE)
   val net = create(classOf[NettyNetwork], new NettyInit(self))
