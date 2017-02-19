@@ -14,10 +14,4 @@ package object overlay {
     request[Route]
   }
 
-  case class Route(key: Int, message: KompicsEvent) extends KompicsEvent
-
-  case class Connect(id: UUID) extends KompicsEvent with Serializable
-
-  case class Ack(id: UUID, clusterSize: Int) extends KompicsEvent with Serializable
-
 }

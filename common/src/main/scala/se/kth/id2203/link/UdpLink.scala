@@ -4,14 +4,18 @@ import se.kth.id2203.{FLL_Deliver, FLL_Send, FairLossLink}
 import se.sics.kompics.network.{Address, Network, Transport}
 import se.sics.kompics.sl._
 
-class UdpLink(init: Init[UdpLink]) extends ComponentDefinition {
+object UdpLink {
+
+  case class Init(self: Address) extends se.sics.kompics.Init[UdpLink]
+
+}
+
+class UdpLink(init: UdpLink.Init) extends ComponentDefinition {
 
   val fll = provides(FairLossLink)
   val net = requires[Network]
 
-  val self = init match {
-    case Init(self: Address) => self
-  }
+  val self = init.self
 
   fll uponEvent {
     case FLL_Send(dest, payload) => handle {

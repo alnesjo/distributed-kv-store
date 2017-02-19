@@ -20,12 +20,12 @@ class LookupTable extends NodeAssignment {
 
   private val partitions = new mutable.HashMap[Int, mutable.Set[Address]] with mutable.MultiMap[Int, Address]
 
-  def lookup(key: Int) = partitions.get(key) match {
-    case Some(_) => partitions(key)
+  def lookup(key: String) = partitions.get(key.hashCode) match {
+    case Some(_) => partitions(key.hashCode)
     case None => partitions.values.last
   }
 
-  def getNodes = partitions.values
+  def getNodes = partitions.values.reduce(_ ++ _)
 
   override def toString = ???
 
