@@ -6,7 +6,7 @@ import se.sics.kompics.sl._
 
 object UdpLink {
 
-  case class Init(self: Address) extends se.sics.kompics.sl.Init[UdpLink]
+  case class Init(self: Address) extends se.sics.kompics.Init[UdpLink]
 
 }
 

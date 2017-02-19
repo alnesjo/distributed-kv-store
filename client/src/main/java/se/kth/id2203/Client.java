@@ -26,13 +26,15 @@ package se.kth.id2203;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.UUID;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import se.kth.id2203.link.*;
+import se.kth.id2203.link.NetworkAddress;
+import se.kth.id2203.link.NetworkAddressConverter;
 import se.sics.kompics.Kompics;
 import se.sics.kompics.config.Config;
 import se.sics.kompics.config.ConfigUpdate;
@@ -44,7 +46,7 @@ import se.sics.kompics.network.Address;
  *
  * @author Lars Kroll <lkroll@kth.se>
  */
-public class Server {
+public class Client {
 
     static final NetworkAddressConverter NAC = new NetworkAddressConverter();
 
@@ -76,8 +78,8 @@ public class Server {
                 self = new NetworkAddress(InetAddress.getByName(ip), port);
             }
             cb.setValue("id2203.project.address", self);
-            if (cmd.hasOption("c")) {
-                String serverS = cmd.getOptionValue("c");
+            if (cmd.hasOption("b")) {
+                String serverS = cmd.getOptionValue("b");
                 Address server = NAC.convert(serverS);
                 if (server == null) {
                     System.err.println("Couldn't parse address string: " + serverS);
@@ -88,7 +90,7 @@ public class Server {
             ConfigUpdate cu = cb.finalise();
             c.apply(cu, ValueMerger.NONE);
 
-            Kompics.createAndStart(ServerHost.class);
+            Kompics.createAndStart(ClientHost.class);
         } catch (ParseException ex) {
             System.err.println("Invalid commandline options: " + ex.getMessage());
             formatter.printHelp("... <options>", opts);
@@ -101,9 +103,11 @@ public class Server {
 
     private static Options prepareOptions() {
         Options opts = new Options();
-        opts.addOption("c", true, "Run in client mode and connect to bootstrap server in <arg> (ip:port)");
+
+        opts.addOption("b", true, "Set Bootstrap server to <arg> (ip:port)");
         opts.addOption("p", true, "Changle local port to <arg> (default from config file)");
         opts.addOption("i", true, "Changle local ip to <arg> (default from config file)");
         return opts;
     }
 }
+

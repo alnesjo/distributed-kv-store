@@ -13,8 +13,8 @@ object BootstrapMaster {
 
   case class Init(self: Address,
                   bootThreshold: Int,
-                  keepAlivePeriod: Int)
-    extends se.sics.kompics.sl.Init[BootstrapMaster]
+                  keepAlivePeriod: Long)
+    extends se.sics.kompics.Init[BootstrapMaster]
 
   sealed trait State
   case object Collecting extends State

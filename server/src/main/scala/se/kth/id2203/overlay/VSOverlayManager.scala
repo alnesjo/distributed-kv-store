@@ -9,7 +9,13 @@ import se.sics.kompics.timer.Timer
 
 import scala.util.Random
 
-class VSOverlayManager extends ComponentDefinition {
+object VSOverlayManager {
+
+  case class Init(self: Address) extends se.sics.kompics.Init[VSOverlayManager]
+
+}
+
+class VSOverlayManager(init: VSOverlayManager.Init) extends ComponentDefinition {
 
   val log = LoggerFactory.getLogger(classOf[VSOverlayManager])
   val rnd = new Random
@@ -19,7 +25,8 @@ class VSOverlayManager extends ComponentDefinition {
   val net = requires[Network]
   val timer = requires[Timer]
 
-  val self = cfg.getValue[Address]("id2203.project.address")
+  val self = init.self
+
   var lookupTable: LookupTable = _
 
   boot uponEvent {
@@ -50,11 +57,11 @@ class VSOverlayManager extends ComponentDefinition {
   }
 
   net uponEvent {
-    case NetworkMessage(src, _, _, Connect(id)) => handle {
+    case NetworkMessage(src, _, _, con: Connect) => handle {
       if (null != lookupTable) {
         log.debug("Accepting connection request from {}", src)
         val size = lookupTable.getNodes.size
-        trigger(NetworkMessage(self, src, Transport.TCP, Ack(id, size)), net)
+        trigger(NetworkMessage(self, src, Transport.TCP, con.ack(size)), net)
       } else {
         log.info("Rejecting connection request from {}, as system is not ready, yet.", src)
       }

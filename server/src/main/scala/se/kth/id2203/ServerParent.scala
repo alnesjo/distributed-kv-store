@@ -8,13 +8,13 @@ import se.sics.kompics.network.{Address, Network}
 import se.sics.kompics.sl._
 import se.sics.kompics.timer.Timer
 
-object Parent {
+object ServerParent {
 
-  case class Init(self: Address) extends se.sics.kompics.sl.Init[Parent]
+  case class Init(self: Address) extends se.sics.kompics.Init[ServerParent]
 
 }
 
-class Parent(init: Parent.Init) extends ComponentDefinition {
+class ServerParent(init: ServerParent.Init) extends ComponentDefinition {
 
   val net = requires[Network]
   val timer = requires[Timer]

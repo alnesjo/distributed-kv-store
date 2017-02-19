@@ -6,7 +6,7 @@ import se.sics.kompics.sl._
 
 object TcpLink {
 
-  case class Init(self: Address) extends se.sics.kompics.sl.Init[TcpLink]
+  case class Init(self: Address) extends se.sics.kompics.Init[TcpLink]
 
 }
 
