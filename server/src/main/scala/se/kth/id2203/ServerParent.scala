@@ -36,7 +36,8 @@ class ServerParent(init: ServerParent.Init) extends ComponentDefinition {
 
   connect[Network](net -> pl)
   connect[Timer](timer -> boot)
-  connect(PerfectLink)(pl -> boot)
+  //connect(PerfectLink)(pl -> boot)
+  connect[Network](net -> boot)
   connect(Bootstrapping)(boot -> overlay)
   connect[Network](net -> overlay)
   connect(Routing)(overlay -> store)

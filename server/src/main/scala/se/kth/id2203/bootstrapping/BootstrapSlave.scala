@@ -3,9 +3,10 @@ package se.kth.id2203.bootstrapping
 import java.util.UUID
 
 import org.slf4j.LoggerFactory
+import se.kth.id2203.link.NetworkMessage
 import se.kth.id2203.{PL_Deliver, PL_Send, PerfectLink}
 import se.sics.kompics.Start
-import se.sics.kompics.network.Address
+import se.sics.kompics.network.{Address, Network, Transport}
 import se.sics.kompics.sl._
 import se.sics.kompics.timer.{CancelPeriodicTimeout, SchedulePeriodicTimeout, Timer}
 
@@ -23,7 +24,8 @@ class BootstrapSlave(init: BootstrapSlave.Init) extends ComponentDefinition {
   override def tearDown() = trigger(new CancelPeriodicTimeout(timeoutId) -> timer)
 
   val boot = provides(Bootstrapping)
-  val pl = requires(PerfectLink)
+  //val pl = requires(PerfectLink)
+  val net = requires[Network]
   val timer = requires[Timer]
 
   val self = init.self
@@ -48,24 +50,29 @@ class BootstrapSlave(init: BootstrapSlave.Init) extends ComponentDefinition {
       state match {
         case Waiting => {
           println("Waiting for master...")
-          trigger(PL_Send(master, Active) -> pl)
+          //trigger(PL_Send(master, Active) -> pl)
+          trigger(NetworkMessage(self, master, Transport.TCP, Active) -> net)
         }
         case Started => {
           println("Ready to boot.")
-          trigger(PL_Send(master, Ready) -> pl)
+          //trigger(PL_Send(master, Ready) -> pl)
+          trigger(NetworkMessage(self, master, Transport.TCP, Ready) -> net)
           suicide()
         }
       }
     }
   }
 
-  pl uponEvent {
-    case PL_Deliver(_, Boot(assignment: NodeAssignment)) => handle {
+  //pl uponEvent {
+  net uponEvent {
+    //case PL_Deliver(_, Boot(assignment: NodeAssignment)) => handle {
+    case NetworkMessage(_, _, _, Boot(assignment: NodeAssignment)) => handle {
       if (state == Waiting) {
         println(s"Received  $self...")
         trigger(Booted(assignment) -> boot)
         trigger(new CancelPeriodicTimeout(timeoutId) -> timer)
-        trigger(PL_Send(master, Ready) -> pl)
+        //trigger(PL_Send(master, Ready) -> pl)
+        trigger(NetworkMessage(self, master, Transport.TCP, Ready) -> net)
         state = Started
       }
     }
