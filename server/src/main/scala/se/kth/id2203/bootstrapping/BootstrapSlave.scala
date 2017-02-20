@@ -3,7 +3,6 @@ package se.kth.id2203.bootstrapping
 import java.util.UUID
 
 import org.slf4j.LoggerFactory
-import se.kth.id2203.link.Message
 import se.kth.id2203.{PL_Deliver, PL_Send, PerfectLink}
 import se.sics.kompics.Start
 import se.sics.kompics.network.{Address, Network, Transport}
@@ -23,6 +22,8 @@ class BootstrapSlave(init: BootstrapSlave.Init) extends ComponentDefinition {
 
   override def tearDown() = trigger(new CancelPeriodicTimeout(timeoutId) -> timer)
 
+  val log = LoggerFactory.getLogger(classOf[BootstrapSlave])
+
   val boot = provides(Bootstrapping)
   val pl = requires(PerfectLink)
   val timer = requires[Timer]
@@ -36,7 +37,7 @@ class BootstrapSlave(init: BootstrapSlave.Init) extends ComponentDefinition {
 
   ctrl uponEvent {
     case _: Start => handle {
-      println(s"Boostrapping slave $self initiated bootstrapping procedure...")
+      log.debug(s"Boostrapping slave $self initiated bootstrapping procedure...")
       val spt = new SchedulePeriodicTimeout(period, period)
       spt.setTimeoutEvent(new BootstrapTimeout(spt))
       trigger(spt -> timer)
@@ -48,11 +49,10 @@ class BootstrapSlave(init: BootstrapSlave.Init) extends ComponentDefinition {
     case _: BootstrapTimeout => handle {
       state match {
         case Waiting => {
-          println("Waiting for master...")
           trigger(PL_Send(master, Active) -> pl)
         }
         case Started => {
-          println("Ready to boot.")
+          log.debug("Ready to boot.")
           trigger(PL_Send(master, Ready) -> pl)
           suicide()
         }
@@ -63,7 +63,6 @@ class BootstrapSlave(init: BootstrapSlave.Init) extends ComponentDefinition {
   pl uponEvent {
     case PL_Deliver(_, Boot(assignment: NodeAssignment)) => handle {
       if (state == Waiting) {
-        println(s"Received  $self...")
         trigger(Booted(assignment) -> boot)
         trigger(new CancelPeriodicTimeout(timeoutId) -> timer)
         trigger(PL_Send(master, Ready) -> pl)

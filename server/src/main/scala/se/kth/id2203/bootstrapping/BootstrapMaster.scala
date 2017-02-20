@@ -4,10 +4,10 @@ import java.util.UUID
 
 import org.slf4j.LoggerFactory
 import se.kth.id2203.{PL_Deliver, PL_Send, PerfectLink}
-import se.sics.kompics.network.{Address, Network, Transport}
+import se.sics.kompics.network.Address
 import se.sics.kompics.timer.{CancelPeriodicTimeout, SchedulePeriodicTimeout, Timer}
 import se.sics.kompics.sl._
-import se.sics.kompics.{KompicsEvent, Start}
+import se.sics.kompics.Start
 
 object BootstrapMaster {
 
@@ -22,6 +22,8 @@ object BootstrapMaster {
 }
 
 class BootstrapMaster(init: BootstrapMaster.Init) extends ComponentDefinition {
+
+  val log = LoggerFactory.getLogger(classOf[BootstrapMaster])
 
   val boot = provides(Bootstrapping)
   val pl = requires(PerfectLink)
@@ -39,8 +41,7 @@ class BootstrapMaster(init: BootstrapMaster.Init) extends ComponentDefinition {
 
   ctrl uponEvent {
     case _: Start => handle {
-      println(s"Boostrapping master $self initiated bootstrapping procedure...")
-      println("Collecting...")
+      log.debug(s"Boostrapping master $self initiated bootstrapping procedure...")
       val spt = new SchedulePeriodicTimeout(period, period)
       spt.setTimeoutEvent(new BootstrapTimeout(spt))
       trigger(spt, timer)
@@ -54,13 +55,13 @@ class BootstrapMaster(init: BootstrapMaster.Init) extends ComponentDefinition {
       state match {
         case BootstrapMaster.Collecting =>
           if (active.size >= bootThreshold) {
-            println("Seeding...")
+            log.debug("Seeding...")
             state = BootstrapMaster.Seeding
             trigger(GetInitialAssignments(active) -> boot)
           }
         case BootstrapMaster.Seeding =>
           if (ready.size >= bootThreshold) {
-            println("Done.")
+            log.debug("Done.")
             trigger(Booted(initialAssignment) -> boot)
             state = BootstrapMaster.Done
           }
@@ -73,7 +74,6 @@ class BootstrapMaster(init: BootstrapMaster.Init) extends ComponentDefinition {
 
   boot uponEvent {
     case InitialAssignments(assignment) => handle {
-      println("Seeding...")
       initialAssignment = assignment
       for (n <- active) trigger(PL_Send(n, Boot(initialAssignment)) -> pl)
       ready += self
@@ -82,11 +82,9 @@ class BootstrapMaster(init: BootstrapMaster.Init) extends ComponentDefinition {
 
   pl uponEvent {
     case PL_Deliver(src, Active) => handle {
-      println("Collecting...")
       active += src
     }
     case PL_Deliver(src, Ready) => handle {
-      println("Seeding...")
       ready += src
     }
   }
