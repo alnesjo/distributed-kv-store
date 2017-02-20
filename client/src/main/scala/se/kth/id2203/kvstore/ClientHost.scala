@@ -1,6 +1,7 @@
-package se.kth.id2203
+package se.kth.id2203.kvstore
 
-import se.kth.id2203.kvstore.ClientService
+import se.kth.id2203.PerfectLink
+import se.kth.id2203.link.TcpLink
 import se.sics.kompics.Init
 import se.sics.kompics.network.netty.{NettyInit, NettyNetwork}
 import se.sics.kompics.network.{Address, Network}
@@ -14,9 +15,11 @@ class ClientHost extends ComponentDefinition {
 
   val timer = create(classOf[JavaTimer], Init.NONE)
   val net = create(classOf[NettyNetwork], new NettyInit(self))
+  val pl = create(classOf[TcpLink], TcpLink.Init(self))
   val parent = create(classOf[ClientService], ClientService.Init(self))
 
   connect[Timer](timer -> parent)
-  connect[Network](net -> parent)
+  connect[Network](net -> pl)
+  connect(PerfectLink)(pl -> parent)
 
 }

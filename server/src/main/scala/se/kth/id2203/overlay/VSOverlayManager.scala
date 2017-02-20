@@ -1,9 +1,9 @@
 package se.kth.id2203.overlay
 
 import org.slf4j.LoggerFactory
+import se.kth.id2203.{PL_Deliver, PL_Send, PerfectLink}
 import se.kth.id2203.bootstrapping.{Booted, Bootstrapping, GetInitialAssignments, InitialAssignments}
-import se.kth.id2203.link.NetworkMessage
-import se.sics.kompics.network.{Address, Network, Transport}
+import se.sics.kompics.network.Address
 import se.sics.kompics.sl._
 import se.sics.kompics.timer.Timer
 
@@ -22,7 +22,7 @@ class VSOverlayManager(init: VSOverlayManager.Init) extends ComponentDefinition 
 
   val route = provides(Routing)
   val boot = requires(Bootstrapping)
-  val net = requires[Network]
+  val pl = requires(PerfectLink)
   val timer = requires[Timer]
 
   val self = init.self
@@ -52,21 +52,20 @@ class VSOverlayManager(init: VSOverlayManager.Init) extends ComponentDefinition 
       val partition = lookupTable.lookup(key)
       val dst = partition.toVector(rnd.nextInt(partition.size))
       log.info("Routing message for key {} to {}", key, dst: Any)
-      trigger(NetworkMessage(self, dst, Transport.TCP, message), net)
+      trigger(PL_Send(dst, message) -> pl)
     }
   }
 
-  net uponEvent {
-    case NetworkMessage(src, _, _, con: Connect) => handle {
+  pl uponEvent {
+    case PL_Deliver(src, con: Connect) => handle {
       if (null != lookupTable) {
         log.debug("Accepting connection request from {}", src)
         val size = lookupTable.getNodes.size
-        trigger(NetworkMessage(self, src, Transport.TCP, con.ack(size)), net)
+        trigger(PL_Send(src, con.ack(size)) -> pl)
       } else {
         log.info("Rejecting connection request from {}, as system is not ready, yet.", src)
       }
     }
   }
-
 
 }

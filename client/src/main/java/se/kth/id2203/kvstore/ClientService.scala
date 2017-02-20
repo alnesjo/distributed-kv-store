@@ -6,10 +6,11 @@ import java.util.concurrent.Future
 
 import com.google.common.base.Optional
 import com.google.common.util.concurrent.SettableFuture
-import se.kth.id2203.link.NetworkMessage
+import org.slf4j.LoggerFactory
+import se.kth.id2203.{PL_Deliver, PL_Send, PerfectLink}
 import se.kth.id2203.overlay.{Connect, Route}
 import se.sics.kompics.{Kompics, KompicsEvent, Start}
-import se.sics.kompics.network.{Address, Network, Transport}
+import se.sics.kompics.network.Address
 import se.sics.kompics.sl._
 import se.sics.kompics.timer.{ScheduleTimeout, Timeout, Timer}
 
@@ -21,8 +22,10 @@ object ClientService {
 
 class ClientService(init: ClientService.Init) extends ComponentDefinition {
 
+  val log = LoggerFactory.getLogger(classOf[ClientService])
+
   val timer = requires[Timer]
-  val net = requires[Network]
+  val pl = requires(PerfectLink)
 
   val self = init.self
   val master = cfg.getValue[Address]("id2203.project.bootstrap-address")
@@ -33,37 +36,39 @@ class ClientService(init: ClientService.Init) extends ComponentDefinition {
 
   ctrl uponEvent {
     case _: Start => handle {
-      println(s"Starting client on $self. Waiting to connect...")
+      log.debug(s"Starting client on $self. Waiting to connect...")
       val st: ScheduleTimeout = new ScheduleTimeout(timeout)
       st.setTimeoutEvent(new ConnectTimeout(st))
-      trigger(NetworkMessage(self, master, Transport.TCP, new Connect(st.getTimeoutEvent.getTimeoutId)) -> net)
+      trigger(PL_Send(master, new Connect(st.getTimeoutEvent.getTimeoutId)) -> pl)
       trigger(st -> timer)
     }
   }
-  net uponEvent {
-    case NetworkMessage(_, _, _, ack@Connect.Ack(id, clusterSize)) => handle {
-      println(s"Client connected to $master, cluster size is $clusterSize")
+
+  pl uponEvent {
+    case PL_Deliver(_, ack@Connect.Ack(id, clusterSize)) => handle {
+      log.debug(s"Client connected to $master, cluster size is $clusterSize")
       connected = Optional.of(ack)
       val c: Console = new Console(ClientService.this)
       val tc: Thread = new Thread(c)
       tc.start()
     }
-    case NetworkMessage(_, _, _, op@OperationRespond(id, status)) => handle {
-      println(s"Got OperationRespond: $op")
+    case PL_Deliver(_, op@OperationRespond(id, status)) => handle {
+      log.debug(s"Got OperationRespond: $op")
       val sf: SettableFuture[OperationRespond] = pending.remove(id)
       if (sf != null) sf.set(op)
-      else println(s"ID $id was not pending! Ignoring response.")
+      else log.debug(s"ID $id was not pending! Ignoring response.")
     }
   }
+
   timer uponEvent {
     case event: ConnectTimeout => handle {
       if (!connected.isPresent) {
-        println(s"Connection to server $master did not succeed. Shutting down...")
+        log.debug(s"Connection to server $master did not succeed. Shutting down...")
         Kompics.asyncShutdown()
       } else {
         val cack = connected.get
         if (!(cack.id == event.getTimeoutId)) {
-          println("Received wrong response id earlier! System may be inconsistent. Shutting down...")
+          log.debug("Received wrong response id earlier! System may be inconsistent. Shutting down...")
           System.exit(1)
         }
       }
@@ -72,7 +77,7 @@ class ClientService(init: ClientService.Init) extends ComponentDefinition {
 
   loopbck uponEvent {
     case event: OpWithFuture => handle {
-      trigger(NetworkMessage(self, master, Transport.TCP, Route(event.op.key, event.op)) -> net)
+      trigger(PL_Send(master, Route(event.op.key, event.op)) -> pl)
       pending.put(event.op.id, event.f)
     }
   }

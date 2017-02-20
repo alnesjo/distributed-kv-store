@@ -28,7 +28,6 @@ import java.net.UnknownHostException;
 import java.util.Map;
 import se.sics.kompics.config.Conversions;
 import se.sics.kompics.config.Converter;
-import se.sics.kompics.network.Address;
 
 public class NetworkAddressConverter implements Converter<NetworkAddress> {
 

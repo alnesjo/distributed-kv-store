@@ -39,6 +39,7 @@ import se.sics.kompics.config.ConfigUpdate;
 import se.sics.kompics.config.Conversions;
 import se.sics.kompics.config.ValueMerger;
 import se.sics.kompics.network.Address;
+import se.sics.kompics.network.netty.serialization.Serializers;
 
 /**
  *
@@ -49,8 +50,14 @@ public class Server {
     static final NetworkAddressConverter NAC = new NetworkAddressConverter();
 
     static {
-        // conversions
+
         Conversions.register(NAC);
+
+        Serializers.register(new NetworkSerializer(), "NS");
+        Serializers.register(NetworkAddress.class, "NS");
+        Serializers.register(NetworkHeader.class, "NS");
+        Serializers.register(NetworkMessage.class, "NS");
+
     }
 
     public static void main(String[] args) {

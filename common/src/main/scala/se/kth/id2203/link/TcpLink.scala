@@ -23,14 +23,14 @@ class TcpLink(init: TcpLink.Init) extends ComponentDefinition {
   pl uponEvent {
     case e@PL_Send(dst, payload) => handle {
       log.debug(s"Handling request $e on PerfectLink")
-      trigger(NetworkMessage(self, dst, Transport.TCP, payload) -> net)
+      trigger(new NetworkMessage(self, dst, Transport.TCP, payload) -> net)
     }
   }
 
   net uponEvent {
-    case e@NetworkMessage(src, `self`, Transport.TCP, payload) => handle {
-      log.debug(s"Handling request $e on Network")
-      trigger(PL_Deliver(src, payload) -> pl)
+    case e: NetworkMessage => handle {
+      log.debug(s"Handling indication $e on Network")
+      trigger(PL_Deliver(e.getSource, e.payload) -> pl)
     }
   }
 

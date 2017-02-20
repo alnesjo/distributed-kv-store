@@ -3,7 +3,6 @@ package se.kth.id2203.bootstrapping
 import java.util.UUID
 
 import org.slf4j.LoggerFactory
-import se.kth.id2203.link.NetworkMessage
 import se.kth.id2203.{PL_Deliver, PL_Send, PerfectLink}
 import se.sics.kompics.network.{Address, Network, Transport}
 import se.sics.kompics.timer.{CancelPeriodicTimeout, SchedulePeriodicTimeout, Timer}

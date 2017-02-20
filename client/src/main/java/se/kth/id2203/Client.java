@@ -33,6 +33,7 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import se.kth.id2203.kvstore.ClientHost;
 import se.kth.id2203.link.NetworkAddress;
 import se.kth.id2203.link.NetworkAddressConverter;
 import se.sics.kompics.Kompics;

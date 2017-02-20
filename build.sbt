@@ -13,5 +13,6 @@ libraryDependencies in ThisBuild ++= List(
   "org.scalatest" %% "scalatest" % "3.0.1" % "test",
   "commons-cli" % "commons-cli" % "1.3.1",
   "log4j" % "log4j" % "1.2.17",
-  "org.jline" % "jline" % "3.1.2"
+  "org.jline" % "jline" % "3.1.2",
+  "ch.qos.logback" % "logback-classic" % "1.1.8"
 )
