@@ -2,7 +2,7 @@ package se.kth.id2203.link
 
 import se.sics.kompics.network.{Address, Header, Transport}
 
-case class NetworkHeader(src: Address, dst: Address, ptc: Transport) extends Header[Address] {
+case class NetworkHeader(src: Address, dst: Address, ptc: Transport) extends Header[Address]  with Serializable {
 
   override def getSource = src
 

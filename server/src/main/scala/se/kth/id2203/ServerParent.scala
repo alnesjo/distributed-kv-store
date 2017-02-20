@@ -35,10 +35,11 @@ class ServerParent(init: ServerParent.Init) extends ComponentDefinition {
   val store = create(classOf[KVService], KVService.Init(self))
 
   connect[Network](net -> pl)
+
+  connect(PerfectLink)(pl -> boot)
   connect[Timer](timer -> boot)
-  //connect(PerfectLink)(pl -> boot)
-  connect[Network](net -> boot)
   connect(Bootstrapping)(boot -> overlay)
+
   connect[Network](net -> overlay)
   connect(Routing)(overlay -> store)
   connect[Network](net -> store)

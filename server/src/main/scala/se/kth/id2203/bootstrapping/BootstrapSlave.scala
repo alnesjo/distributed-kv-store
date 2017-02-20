@@ -24,8 +24,7 @@ class BootstrapSlave(init: BootstrapSlave.Init) extends ComponentDefinition {
   override def tearDown() = trigger(new CancelPeriodicTimeout(timeoutId) -> timer)
 
   val boot = provides(Bootstrapping)
-  //val pl = requires(PerfectLink)
-  val net = requires[Network]
+  val pl = requires(PerfectLink)
   val timer = requires[Timer]
 
   val self = init.self
@@ -50,29 +49,24 @@ class BootstrapSlave(init: BootstrapSlave.Init) extends ComponentDefinition {
       state match {
         case Waiting => {
           println("Waiting for master...")
-          //trigger(PL_Send(master, Active) -> pl)
-          trigger(NetworkMessage(self, master, Transport.TCP, Active) -> net)
+          trigger(PL_Send(master, Active) -> pl)
         }
         case Started => {
           println("Ready to boot.")
-          //trigger(PL_Send(master, Ready) -> pl)
-          trigger(NetworkMessage(self, master, Transport.TCP, Ready) -> net)
+          trigger(PL_Send(master, Ready) -> pl)
           suicide()
         }
       }
     }
   }
 
-  //pl uponEvent {
-  net uponEvent {
-    //case PL_Deliver(_, Boot(assignment: NodeAssignment)) => handle {
-    case NetworkMessage(_, _, _, Boot(assignment: NodeAssignment)) => handle {
+  pl uponEvent {
+    case PL_Deliver(_, Boot(assignment: NodeAssignment)) => handle {
       if (state == Waiting) {
         println(s"Received  $self...")
         trigger(Booted(assignment) -> boot)
         trigger(new CancelPeriodicTimeout(timeoutId) -> timer)
-        //trigger(PL_Send(master, Ready) -> pl)
-        trigger(NetworkMessage(self, master, Transport.TCP, Ready) -> net)
+        trigger(PL_Send(master, Ready) -> pl)
         state = Started
       }
     }

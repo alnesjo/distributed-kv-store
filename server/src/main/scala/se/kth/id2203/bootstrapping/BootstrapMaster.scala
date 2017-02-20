@@ -8,7 +8,7 @@ import se.kth.id2203.{PL_Deliver, PL_Send, PerfectLink}
 import se.sics.kompics.network.{Address, Network, Transport}
 import se.sics.kompics.timer.{CancelPeriodicTimeout, SchedulePeriodicTimeout, Timer}
 import se.sics.kompics.sl._
-import se.sics.kompics.Start
+import se.sics.kompics.{KompicsEvent, Start}
 
 object BootstrapMaster {
 
@@ -25,8 +25,7 @@ object BootstrapMaster {
 class BootstrapMaster(init: BootstrapMaster.Init) extends ComponentDefinition {
 
   val boot = provides(Bootstrapping)
-  //val pl = requires(PerfectLink)
-  val net = requires[Network]
+  val pl = requires(PerfectLink)
   val timer = requires[Timer]
 
   val self = init.self
@@ -77,21 +76,17 @@ class BootstrapMaster(init: BootstrapMaster.Init) extends ComponentDefinition {
     case InitialAssignments(assignment) => handle {
       println("Seeding...")
       initialAssignment = assignment
-      //for (n <- active) trigger(PL_Send(n, Boot(initialAssignment)) -> pl)
-      for (n <- active) trigger(NetworkMessage(self, n, Transport.TCP, Boot(initialAssignment)) -> net)
+      for (n <- active) trigger(PL_Send(n, Boot(initialAssignment)) -> pl)
       ready += self
     }
   }
 
-  //pl uponEvent {
-  net uponEvent {
-    //case PL_Deliver(src, Active) => handle {
-    case NetworkMessage(src, _, _, Active) => handle {
+  pl uponEvent {
+    case PL_Deliver(src, Active) => handle {
       println("Collecting...")
       active += src
     }
-    //case PL_Deliver(src, Ready) => handle {
-    case NetworkMessage(src, _, _, Ready) => handle {
+    case PL_Deliver(src, Ready) => handle {
       println("Seeding...")
       ready += src
     }
