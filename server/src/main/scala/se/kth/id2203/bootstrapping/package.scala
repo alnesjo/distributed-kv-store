@@ -7,8 +7,6 @@ import se.sics.kompics.timer.{SchedulePeriodicTimeout, Timeout}
 
 package object bootstrapping {
 
-  class NodeAssignment extends Serializable
-
   case class GetInitialAssignments(nodes: Set[Address]) extends KompicsEvent
 
   case class Booted(assignment: NodeAssignment) extends KompicsEvent
@@ -20,13 +18,5 @@ package object bootstrapping {
     indication[Booted]
     request[InitialAssignments]
   }
-
-  class BootstrapTimeout(spt: SchedulePeriodicTimeout) extends Timeout(spt)
-
-  case class Boot(assignment: NodeAssignment) extends KompicsEvent with Serializable
-
-  case object Active extends KompicsEvent
-
-  case object Ready extends KompicsEvent
 
 }

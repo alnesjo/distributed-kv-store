@@ -5,7 +5,7 @@ import java.util.UUID
 import org.slf4j.LoggerFactory
 import se.kth.id2203.{PL_Deliver, PL_Send, PerfectLink}
 import se.sics.kompics.network.Address
-import se.sics.kompics.timer.{CancelPeriodicTimeout, SchedulePeriodicTimeout, Timer}
+import se.sics.kompics.timer.{CancelPeriodicTimeout, SchedulePeriodicTimeout, Timeout, Timer}
 import se.sics.kompics.sl._
 import se.sics.kompics.Start
 
@@ -14,14 +14,16 @@ object BootstrapMaster {
   case class Init(self: Address, bootThreshold: Int, keepAlivePeriod: Long)
     extends se.sics.kompics.Init[BootstrapMaster]
 
+}
+
+class BootstrapMaster(init: BootstrapMaster.Init) extends ComponentDefinition {
+
+  class BootstrapTimeout(spt: SchedulePeriodicTimeout) extends Timeout(spt)
+
   sealed trait State
   case object Collecting extends State
   case object Seeding extends State
   case object Done extends State
-
-}
-
-class BootstrapMaster(init: BootstrapMaster.Init) extends ComponentDefinition {
 
   val log = LoggerFactory.getLogger(classOf[BootstrapMaster])
 
@@ -33,7 +35,7 @@ class BootstrapMaster(init: BootstrapMaster.Init) extends ComponentDefinition {
   val bootThreshold = init.bootThreshold
   val period = 2 * init.keepAlivePeriod
 
-  var state: BootstrapMaster.State = BootstrapMaster.Collecting
+  var state: State = Collecting
   var timeoutId: UUID = _
   var active = Set[Address]()
   var ready = Set[Address]()
@@ -41,7 +43,7 @@ class BootstrapMaster(init: BootstrapMaster.Init) extends ComponentDefinition {
 
   ctrl uponEvent {
     case _: Start => handle {
-      log.debug(s"Boostrapping master $self initiated bootstrapping procedure...")
+      log.debug(s"Initiated bootstrapping procedure at $self...")
       val spt = new SchedulePeriodicTimeout(period, period)
       spt.setTimeoutEvent(new BootstrapTimeout(spt))
       trigger(spt, timer)
@@ -53,19 +55,19 @@ class BootstrapMaster(init: BootstrapMaster.Init) extends ComponentDefinition {
   timer uponEvent {
     case _: BootstrapTimeout => handle {
       state match {
-        case BootstrapMaster.Collecting =>
+        case Collecting =>
           if (active.size >= bootThreshold) {
-            log.debug("Seeding...")
-            state = BootstrapMaster.Seeding
+            log.debug(s"Nodes at $active are waiting for initial assignment...")
+            state = Seeding
             trigger(GetInitialAssignments(active) -> boot)
           }
-        case BootstrapMaster.Seeding =>
+        case Seeding =>
           if (ready.size >= bootThreshold) {
-            log.debug("Done.")
+            log.debug(s"Nodes at $ready are ready to boot, process complete.")
             trigger(Booted(initialAssignment) -> boot)
-            state = BootstrapMaster.Done
+            state = Done
           }
-        case BootstrapMaster.Done =>
+        case Done =>
           trigger(new CancelPeriodicTimeout(timeoutId) -> timer)
           suicide()
       }
@@ -82,9 +84,11 @@ class BootstrapMaster(init: BootstrapMaster.Init) extends ComponentDefinition {
 
   pl uponEvent {
     case PL_Deliver(src, Active) => handle {
+      log.trace(s"Slave at $src is waiting for initial assignment.")
       active += src
     }
     case PL_Deliver(src, Ready) => handle {
+      log.trace(s"Slave at $src is ready to boot.")
       ready += src
     }
   }

@@ -22,14 +22,14 @@ class UdpLink(init: UdpLink.Init) extends ComponentDefinition {
 
   fll uponEvent {
     case e@FLL_Send(dest, payload) => handle {
-      log.debug(s"Handling request $e on FairLossLink")
+      log.trace(s"Handling request $e on $fll")
       trigger(new NetworkMessage(self, dest, Transport.UDP, payload) -> net)
     }
   }
 
   net uponEvent {
     case e: NetworkMessage => handle {
-      log.debug(s"Handling indication $e on Network")
+      log.trace(s"Handling indication $e on $net")
       trigger(FLL_Deliver(e.getSource, e.payload) -> fll)
     }
   }

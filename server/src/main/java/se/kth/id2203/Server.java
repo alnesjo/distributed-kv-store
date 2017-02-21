@@ -33,6 +33,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import se.kth.id2203.link.*;
+import se.kth.id2203.bootstrapping.*;
 import se.sics.kompics.Kompics;
 import se.sics.kompics.config.Config;
 import se.sics.kompics.config.ConfigUpdate;
@@ -57,6 +58,12 @@ public class Server {
         Serializers.register(NetworkAddress.class, "NS");
         Serializers.register(NetworkHeader.class, "NS");
         Serializers.register(NetworkMessage.class, "NS");
+
+        Serializers.register(new PicklingSerializer(), "PS");
+        Serializers.register(se.kth.id2203.bootstrapping.Active$.class, "PS");
+        Serializers.register(se.kth.id2203.bootstrapping.Boot.class, "PS");
+        Serializers.register(se.kth.id2203.bootstrapping.NodeAssignment.class, "PS");
+        Serializers.register(se.kth.id2203.bootstrapping.Ready$.class, "PS");
 
     }
 
