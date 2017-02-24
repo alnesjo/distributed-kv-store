@@ -7,7 +7,7 @@ import java.util.concurrent.Future
 import com.google.common.util.concurrent.SettableFuture
 import org.slf4j.LoggerFactory
 import se.kth.id2203.kvstore.{OperationInvoke, OperationRespond}
-import se.kth.id2203.overlay.{Connect, RouteMessage}
+import se.kth.id2203.overlay.{Ack, Connect, RouteMessage}
 import se.sics.kompics.network.Address
 import se.sics.kompics.sl._
 import se.sics.kompics.timer.{ScheduleTimeout, Timeout, Timer}
@@ -30,7 +30,7 @@ class ClientService(init: ClientService.Init) extends ComponentDefinition {
   val master = cfg.getValue[Address]("id2203.project.bootstrap-address")
   val timeout = 2 * cfg.getValue[Long]("id2203.project.keepAlivePeriod")
 
-  var connected: Option[Connect.Ack] = None
+  var connected: Option[Ack] = None
   val pending = new util.TreeMap[UUID, SettableFuture[OperationRespond]]
 
   ctrl uponEvent {
@@ -38,24 +38,24 @@ class ClientService(init: ClientService.Init) extends ComponentDefinition {
       log.debug(s"Starting client on $self. Waiting to connect...")
       val st: ScheduleTimeout = new ScheduleTimeout(timeout)
       st.setTimeoutEvent(new ConnectTimeout(st))
-      trigger(PL_Send(master, new Connect(st.getTimeoutEvent.getTimeoutId)) -> pl)
+      trigger(PL_Send(master, Connect(st.getTimeoutEvent.getTimeoutId)) -> pl)
       trigger(st -> timer)
     }
   }
 
   pl uponEvent {
-    case PL_Deliver(_, ack: Connect.Ack) => handle {
-      log.debug(s"Client connected to $master, cluster size is ${ack.clusterSize}")
+    case PL_Deliver(_, ack@Ack(id, clusterSize)) => handle {
+      log.debug(s"Client connected to $master, cluster size is $clusterSize")
       connected = Some(ack)
       val c: Console = new Console(ClientService.this)
       val tc: Thread = new Thread(c)
       tc.start()
     }
-    case PL_Deliver(_, op: OperationRespond) => handle {
+    case PL_Deliver(_, op@OperationRespond(id, status)) => handle {
       log.debug(s"Got OperationRespond: $op")
-      val sf: SettableFuture[OperationRespond] = pending.remove(op.id)
+      val sf: SettableFuture[OperationRespond] = pending.remove(id)
       if (sf != null) sf.set(op)
-      else log.debug(s"ID $op.id was not pending! Ignoring response.")
+      else log.debug(s"ID $id was not pending! Ignoring response.")
     }
   }
 
@@ -75,13 +75,13 @@ class ClientService(init: ClientService.Init) extends ComponentDefinition {
 
   loopbck uponEvent {
     case owf: OpWithFuture => handle {
-      trigger(PL_Send(master, new RouteMessage(owf.op.key, owf.op)) -> pl)
+      trigger(PL_Send(master, RouteMessage(owf.op.key, owf.op)) -> pl)
       pending.put(owf.op.id, owf.f)
     }
   }
 
   def op(key: String): Future[OperationRespond] = {
-    val op = new OperationInvoke(key)
+    val op = OperationInvoke(key)
     val owf = OpWithFuture(op)
     trigger(owf -> onSelf)
     owf.f

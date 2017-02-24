@@ -59,6 +59,8 @@ public class Client {
         Serializers.register(NetworkHeader.class, "NS");
         Serializers.register(NetworkMessage.class, "NS");
 
+        Serializers.register(new PicklingSerializer(), "PS");
+
     }
 
     public static void main(String[] args) {
