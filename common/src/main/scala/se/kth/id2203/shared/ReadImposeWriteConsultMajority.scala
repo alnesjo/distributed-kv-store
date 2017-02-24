@@ -3,10 +3,18 @@ package se.kth.id2203.shared
 import se.kth.id2203._
 import se.sics.kompics.network._
 import se.sics.kompics.sl._
-import se.sics.kompics.{ComponentDefinition => _, Port => _}
+import se.sics.kompics.{KompicsEvent, ComponentDefinition => _, Port => _}
+
 import scala.collection.mutable
 
 class ReadImposeWriteConsultMajority(init: Init[ReadImposeWriteConsultMajority]) extends ComponentDefinition {
+
+  implicit def addComparators[A](x: A)(implicit o: math.Ordering[A]): o.Ops = o.mkOrderingOps(x)
+
+  case class Read(rid: Int) extends KompicsEvent
+  case class Value(rid: Int, ts: Int, wr: Int, value: Option[Any]) extends KompicsEvent
+  case class Write(rid: Int, ts: Int, wr: Int, writeVal: Option[Any]) extends KompicsEvent
+  case class Ack(rid: Int) extends KompicsEvent
 
   val nnar = provides(AtomicRegister)
   val pl = requires(PerfectLink)
