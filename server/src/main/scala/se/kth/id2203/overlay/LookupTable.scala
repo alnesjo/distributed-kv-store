@@ -19,7 +19,7 @@ object LookupTable {
 
 class LookupTable extends NodeAssignment {
 
-  private var partitions = Map[Int, Set[Address]]()
+  var partitions = Map[Int, Set[Address]]()
 
   def lookup(key: String) = partitions.get(key.hashCode) match {
     case Some(_) => partitions(key.hashCode)

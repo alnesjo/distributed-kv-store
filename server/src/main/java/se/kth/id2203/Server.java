@@ -34,6 +34,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import se.kth.id2203.link.*;
 import se.kth.id2203.bootstrapping.*;
+import se.kth.id2203.overlay.LookupTable;
 import se.sics.kompics.Kompics;
 import se.sics.kompics.config.Config;
 import se.sics.kompics.config.ConfigUpdate;
@@ -60,6 +61,12 @@ public class Server {
         Serializers.register(NetworkMessage.class, "NS");
 
         Serializers.register(new PicklingSerializer(), "PS");
+        Serializers.register(Active$.class, "PS");
+        Serializers.register(Boot.class, "PS");
+        Serializers.register(Ready$.class, "PS");
+
+        Serializers.register(new SpecialSerializer(), "SS");
+        Serializers.register(LookupTable.class, "SS");
 
     }
 
