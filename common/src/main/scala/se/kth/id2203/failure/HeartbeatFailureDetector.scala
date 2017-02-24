@@ -1,12 +1,17 @@
 package se.kth.id2203.failure
 
 import se.kth.id2203._
-import se.sics.kompics.Start
+import se.sics.kompics.{KompicsEvent, Start}
 import se.sics.kompics.network.Address
 import se.sics.kompics.sl._
-import se.sics.kompics.timer.{ScheduleTimeout, Timer}
+import se.sics.kompics.timer.{ScheduleTimeout, Timeout, Timer}
 
 class HeartbeatFailureDetector(epfdInit: Init[HeartbeatFailureDetector]) extends ComponentDefinition {
+
+  case class CheckTimeout(timeout: ScheduleTimeout) extends Timeout(timeout)
+
+  case class HeartbeatReply(seq: Int) extends KompicsEvent
+  case class HeartbeatRequest(seq: Int) extends KompicsEvent
 
   val epfd = provides(EventuallyPerfectFailureDetector)
   val pl = requires(PerfectLink)

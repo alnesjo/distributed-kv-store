@@ -7,6 +7,8 @@ import se.sics.kompics.sl._
 
 class EagerReliableBroadcast(init: Init[EagerReliableBroadcast]) extends ComponentDefinition {
 
+  case class Source(src: Address, payload: KompicsEvent) extends KompicsEvent
+
   val beb = requires(BestEffortBroadcast)
   val rb = provides(ReliableBroadcast)
 
