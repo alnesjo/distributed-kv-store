@@ -5,20 +5,21 @@ import se.sics.kompics.network.Address
 import scala.collection.mutable
 
 object LookupTable {
-  def generate(nodes: Set[Address]): LookupTable = {
+  def generate(nodes: Set[Address], replicationDegree: Int): LookupTable = {
     val lut = new LookupTable
-    val d = 3 // Replication degree
     val (k, n) = nodes.map(a => (a.hashCode(), a)).toList.unzip
-    for ((x, y) <- (0 to d).map(i => k zip ((n drop i) ++ (n take i))).reduce(_ ++ _)) {
-      lut.partitions addBinding (x, y)
-    }
+    lut.partitions = (0 until replicationDegree)
+      .map(i => k zip ((n drop i) ++ (n take i)))
+      .reduce(_ ++ _)
+      .groupBy(_._1)
+      .mapValues(l => l map (t => t._2) toSet)
     lut
   }
 }
 
 class LookupTable extends NodeAssignment {
 
-  private val partitions = new mutable.HashMap[Int, mutable.Set[Address]] with mutable.MultiMap[Int, Address]
+  private var partitions = Map[Int, Set[Address]]()
 
   def lookup(key: String) = partitions.get(key.hashCode) match {
     case Some(_) => partitions(key.hashCode)
@@ -27,6 +28,6 @@ class LookupTable extends NodeAssignment {
 
   def getNodes = partitions.values.reduce(_ ++ _)
 
-  override def toString = ???
+  override def toString = s"$getClass($partitions)"
 
 }
