@@ -4,4 +4,4 @@ import java.util.UUID
 
 import se.sics.kompics.KompicsEvent
 
-case class Connect(id: UUID) extends KompicsEvent
+case class Ack(id: UUID, clusterSize: Int) extends KompicsEvent

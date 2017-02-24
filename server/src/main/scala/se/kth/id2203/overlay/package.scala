@@ -11,7 +11,7 @@ import se.sics.kompics.sl.Port
 package object overlay {
 
   object Routing extends Port {
-    request[Route]
+    request[RouteMessage]
   }
 
 }

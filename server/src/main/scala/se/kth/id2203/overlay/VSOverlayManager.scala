@@ -34,8 +34,8 @@ class VSOverlayManager(init: VSOverlayManager.Init) extends ComponentDefinition 
     case GetInitialAssignments(nodes: Set[Address]) => handle {
       log.info("Generating LookupTable...")
       val lut = LookupTable.generate(nodes, replicationDegree)
-      log.debug("Generated assignments:\n{}", lut)
-      trigger(InitialAssignments(lut), boot)
+      log.debug(s"Generated assignments: $lut")
+      trigger(InitialAssignments(lut) -> boot)
     }
     case Booted(assignment) => handle {
       assignment match {
@@ -43,29 +43,26 @@ class VSOverlayManager(init: VSOverlayManager.Init) extends ComponentDefinition 
           log.info("Got NodeAssignment, overlay ready.")
           lookupTable = lut
         case _ =>
-          log.error("Got invalid NodeAssignment type. Expected: LookupTable; Got: {}", assignment.getClass)
+          log.error(s"Got invalid NodeAssignment type. Expected: LookupTable; Got: ${assignment.getClass}")
       }
     }
   }
 
   route uponEvent {
-    case e: RouteMessage => handle {
-      val partition = lookupTable.lookup(e.key)
-      var dst = partition.iterator()
-      for (_ <- 0 until rnd.nextInt(partition.size)) {
-        dst.next
-      }
-      log.info(s"Routing message for key ${e.key} to $dst")
-      trigger(PL_Send(dst.next, e.message) -> pl)
+    case RouteMessage(key, message) => handle {
+      val partition = lookupTable.lookup(key)
+      val dst = partition.toVector(rnd.nextInt(partition.size))
+      log.info(s"Routing message for key $key to $dst")
+      trigger(PL_Send(dst, message) -> pl)
     }
   }
 
   pl uponEvent {
-    case PL_Deliver(src, con: Connect) => handle {
+    case PL_Deliver(src, Connect(id)) => handle {
       if (null != lookupTable) {
         log.debug("Accepting connection request from {}", src)
         val size = lookupTable.getNodes.size
-        trigger(PL_Send(src, con.ack(size)) -> pl)
+        trigger(PL_Send(src, Ack(id, size)) -> pl)
       } else {
         log.info("Rejecting connection request from {}, as system is not ready, yet.", src)
       }
