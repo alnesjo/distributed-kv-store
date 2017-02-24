@@ -1,6 +1,5 @@
-package se.kth.id2203.kvstore
+package se.kth.id2203
 
-import se.kth.id2203.PerfectLink
 import se.kth.id2203.link.TcpLink
 import se.sics.kompics.Init
 import se.sics.kompics.network.netty.{NettyInit, NettyNetwork}

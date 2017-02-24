@@ -4,7 +4,6 @@ import com.google.common.base.Optional
 import io.netty.buffer.ByteBuf
 import org.slf4j.LoggerFactory
 import se.sics.kompics.network.netty.serialization.{Serializer, Serializers}
-
 import scala.pickling.Defaults._
 import scala.pickling.json._
 

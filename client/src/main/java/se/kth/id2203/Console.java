@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package se.kth.id2203.kvstore;
+package se.kth.id2203;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -42,6 +42,7 @@ import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.UserInterruptException;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
+import se.kth.id2203.kvstore.OperationRespond;
 import util.log4j.ColoredPatternLayout;
 
 /**

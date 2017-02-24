@@ -31,7 +31,7 @@ class ServerParent(init: ServerParent.Init) extends ComponentDefinition {
     case None =>
       create(classOf[BootstrapMaster], BootstrapMaster.Init(self, bootThreshold, keepAlivePeriod))
   }
-  val over = create(classOf[VSOverlayManager], VSOverlayManager.Init(self))
+  val over = create(classOf[VSOverlayManager], VSOverlayManager.Init(self, 1))
   val store = create(classOf[KVService], KVService.Init(self))
 
   connect[Network](net -> pl)

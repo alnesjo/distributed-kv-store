@@ -33,15 +33,14 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import se.kth.id2203.kvstore.ClientHost;
-import se.kth.id2203.link.NetworkAddress;
-import se.kth.id2203.link.NetworkAddressConverter;
+import se.kth.id2203.link.*;
 import se.sics.kompics.Kompics;
 import se.sics.kompics.config.Config;
 import se.sics.kompics.config.ConfigUpdate;
 import se.sics.kompics.config.Conversions;
 import se.sics.kompics.config.ValueMerger;
 import se.sics.kompics.network.Address;
+import se.sics.kompics.network.netty.serialization.Serializers;
 
 /**
  *
@@ -54,6 +53,12 @@ public class Client {
     static {
         // conversions
         Conversions.register(NAC);
+
+        Serializers.register(new NetworkSerializer(), "NS");
+        Serializers.register(NetworkAddress.class, "NS");
+        Serializers.register(NetworkHeader.class, "NS");
+        Serializers.register(NetworkMessage.class, "NS");
+
     }
 
     public static void main(String[] args) {
@@ -91,6 +96,7 @@ public class Client {
             ConfigUpdate cu = cb.finalise();
             c.apply(cu, ValueMerger.NONE);
             Kompics.createAndStart(ClientHost.class);
+            Kompics.waitForTermination();
         } catch (ParseException ex) {
             System.err.println("Invalid commandline options: " + ex.getMessage());
             formatter.printHelp("... <options>", opts);
@@ -98,6 +104,8 @@ public class Client {
         } catch (UnknownHostException ex) {
             System.err.println(ex.getMessage());
             System.exit(1);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 

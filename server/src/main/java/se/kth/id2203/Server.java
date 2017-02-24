@@ -59,12 +59,6 @@ public class Server {
         Serializers.register(NetworkHeader.class, "NS");
         Serializers.register(NetworkMessage.class, "NS");
 
-        Serializers.register(new PicklingSerializer(), "PS");
-        Serializers.register(se.kth.id2203.bootstrapping.Active$.class, "PS");
-        Serializers.register(se.kth.id2203.bootstrapping.Boot.class, "PS");
-        Serializers.register(se.kth.id2203.bootstrapping.NodeAssignment.class, "PS");
-        Serializers.register(se.kth.id2203.bootstrapping.Ready$.class, "PS");
-
     }
 
     public static void main(String[] args) {
@@ -102,6 +96,7 @@ public class Server {
             ConfigUpdate cu = cb.finalise();
             c.apply(cu, ValueMerger.NONE);
             Kompics.createAndStart(ServerHost.class);
+            Kompics.waitForTermination();
         } catch (ParseException ex) {
             System.err.println("Invalid commandline options: " + ex.getMessage());
             formatter.printHelp("... <options>", opts);
@@ -109,6 +104,8 @@ public class Server {
         } catch (UnknownHostException ex) {
             System.err.println(ex.getMessage());
             System.exit(1);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 

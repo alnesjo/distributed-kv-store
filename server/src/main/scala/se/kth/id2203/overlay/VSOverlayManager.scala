@@ -11,7 +11,7 @@ import scala.util.Random
 
 object VSOverlayManager {
 
-  case class Init(self: Address) extends se.sics.kompics.Init[VSOverlayManager]
+  case class Init(self: Address, replicationDegree: Int) extends se.sics.kompics.Init[VSOverlayManager]
 
 }
 
@@ -26,13 +26,14 @@ class VSOverlayManager(init: VSOverlayManager.Init) extends ComponentDefinition 
   val timer = requires[Timer]
 
   val self = init.self
+  val replicationDegree = init.replicationDegree
 
   var lookupTable: LookupTable = _
 
   boot uponEvent {
     case GetInitialAssignments(nodes: Set[Address]) => handle {
       log.info("Generating LookupTable...")
-      val lut = LookupTable.generate(nodes)
+      val lut = LookupTable.generate(nodes, replicationDegree)
       log.debug("Generated assignments:\n{}", lut)
       trigger(InitialAssignments(lut), boot)
     }
@@ -48,11 +49,14 @@ class VSOverlayManager(init: VSOverlayManager.Init) extends ComponentDefinition 
   }
 
   route uponEvent {
-    case Route(key, message) => handle {
-      val partition = lookupTable.lookup(key)
-      val dst = partition.toVector(rnd.nextInt(partition.size))
-      log.info("Routing message for key {} to {}", key, dst: Any)
-      trigger(PL_Send(dst, message) -> pl)
+    case e: RouteMessage => handle {
+      val partition = lookupTable.lookup(e.key)
+      var dst = partition.iterator()
+      for (_ <- 0 until rnd.nextInt(partition.size)) {
+        dst.next
+      }
+      log.info(s"Routing message for key ${e.key} to $dst")
+      trigger(PL_Send(dst.next, e.message) -> pl)
     }
   }
 
