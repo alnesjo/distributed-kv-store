@@ -32,9 +32,11 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import se.kth.id2203.kvstore.OperationInvoke;
+import se.kth.id2203.kvstore.OperationRespond;
 import se.kth.id2203.link.*;
 import se.kth.id2203.bootstrapping.*;
-import se.kth.id2203.overlay.LookupTable;
+import se.kth.id2203.overlay.*;
 import se.sics.kompics.Kompics;
 import se.sics.kompics.config.Config;
 import se.sics.kompics.config.ConfigUpdate;
@@ -62,10 +64,15 @@ public class Server {
 
         Serializers.register(new PicklingSerializer(), "PS");
         Serializers.register(Active$.class, "PS");
-        Serializers.register(Boot.class, "PS");
         Serializers.register(Ready$.class, "PS");
+        Serializers.register(Connect.class, "PS");
+        Serializers.register(Ack.class, "PS");
+        Serializers.register(OperationInvoke.class, "PS");
+        Serializers.register(OperationRespond.class, "PS");
+        Serializers.register(RouteMessage.class, "PS");
 
         Serializers.register(new SpecialSerializer(), "SS");
+        Serializers.register(Boot.class, "SS");
         Serializers.register(LookupTable.class, "SS");
 
     }

@@ -37,15 +37,15 @@ public class NetworkSerializer implements Serializer {
             NetworkHeader header = (NetworkHeader) o;
             log.trace("Serializing {}.", o);
             buf.writeByte(HEADER); // mark which type we are serialising (1 byte)
-            this.toBinary(header.src, buf); // use this serialiser again (7 bytes)
-            this.toBinary(header.dst, buf); // use this serialiser again (7 bytes)
-            buf.writeByte(header.ptc.ordinal()); // 1 byte is enough
+            this.toBinary(header.getSource(), buf); // use this serialiser again (7 bytes)
+            this.toBinary(header.getDestination(), buf); // use this serialiser again (7 bytes)
+            buf.writeByte(header.getProtocol().ordinal()); // 1 byte is enough
         } else if (o instanceof NetworkMessage) {
             NetworkMessage message = (NetworkMessage) o;
             log.trace("Serializing {}.", o);
             buf.writeByte(MESSAGE); // mark which type we are serialising (1 byte)
             this.toBinary(message.getHeader(), buf); // use this serialiser again (16 bytes)
-            Serializers.toBinary(message.payload, buf); // unknown but should be serializable
+            Serializers.toBinary(message.payload(), buf); // unknown but should be serializable
         }
     }
 
