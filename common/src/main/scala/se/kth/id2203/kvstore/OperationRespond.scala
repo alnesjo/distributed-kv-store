@@ -13,8 +13,8 @@ object OperationRespond {
 
 }
 
-case class OperationRespond(id: UUID, status: OperationRespond.Code) extends KompicsEvent {
+case class OperationRespond(id: String, status: OperationRespond.Code) extends KompicsEvent {
 
-  override def toString = super.toString
+  override def toString = s"$getClass($id,$status)"
 
 }

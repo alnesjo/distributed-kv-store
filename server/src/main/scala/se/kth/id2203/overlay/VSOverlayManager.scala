@@ -1,9 +1,12 @@
 package se.kth.id2203.overlay
 
+import java.util.UUID
+
 import org.slf4j.LoggerFactory
 import se.kth.id2203.{PL_Deliver, PL_Send, PerfectLink}
 import se.kth.id2203.bootstrapping.{Booted, Bootstrapping, GetInitialAssignments, InitialAssignments}
-import se.sics.kompics.network.Address
+import se.kth.id2203.link.{NetworkAddress, NetworkMessage}
+import se.sics.kompics.network.{Address, Network, Transport}
 import se.sics.kompics.sl._
 import se.sics.kompics.timer.Timer
 
@@ -22,13 +25,13 @@ class VSOverlayManager(init: VSOverlayManager.Init) extends ComponentDefinition 
 
   val route = provides(Routing)
   val boot = requires(Bootstrapping)
-  val pl = requires(PerfectLink)
+  val net = requires[Network]
   val timer = requires[Timer]
 
   val self = init.self
   val replicationDegree = init.replicationDegree
 
-  var lookupTable: LookupTable = _
+  var lookupTable: Option[LookupTable] = None
 
   boot uponEvent {
     case GetInitialAssignments(nodes: Set[Address]) => handle {
@@ -41,7 +44,7 @@ class VSOverlayManager(init: VSOverlayManager.Init) extends ComponentDefinition 
       assignment match {
         case lut: LookupTable =>
           log.info("Got NodeAssignment, overlay ready.")
-          lookupTable = lut
+          lookupTable = Some(lut)
         case _ =>
           log.error(s"Got invalid NodeAssignment type. Expected: LookupTable; Got: ${assignment.getClass}")
       }
@@ -50,22 +53,30 @@ class VSOverlayManager(init: VSOverlayManager.Init) extends ComponentDefinition 
 
   route uponEvent {
     case RouteMessage(key, message) => handle {
-      val partition = lookupTable.lookup(key)
+      val partition: Set[Address] = lookupTable.get.lookup(key)
       val dst = partition.toVector(rnd.nextInt(partition.size))
-      log.info(s"Routing message for key $key to $dst")
-      trigger(PL_Send(dst, message) -> pl)
+      log.info(s"Routing local message for key $key to $dst")
+      trigger(NetworkMessage(self, dst, Transport.TCP, message) -> net)
     }
   }
 
-  pl uponEvent {
-    case PL_Deliver(src, Connect(id)) => handle {
-      if (null != lookupTable) {
-        log.debug("Accepting connection request from {}", src)
-        val size = lookupTable.getNodes.size
-        trigger(PL_Send(src, Ack(id, size)) -> pl)
-      } else {
-        log.info("Rejecting connection request from {}, as system is not ready, yet.", src)
+  net uponEvent {
+    case NetworkMessage(src, _, _, Connect(id)) => handle {
+      lookupTable match {
+        case Some(lut) =>
+          log.debug(s"Accepting connection request from $src")
+          val size: Int = lut.getNodes.size
+          trigger(NetworkMessage(self, src, Transport.TCP, Ack(id, size)) -> net)
+        case _ =>
+          log.info(s"Rejecting connection request from $src, as system is not ready, yet.")
       }
+    }
+    case NetworkMessage(src, _, _, RouteMessage(key, message)) => handle {
+      val group: Set[Address] = lookupTable.get.lookup(key)
+      log.trace(s"Choosing random node in replication group $group")
+      val dst = group.toVector(rnd.nextInt(group.size))
+      log.info(s"Routing message for key $key to $dst")
+      trigger(NetworkMessage(src, dst, Transport.TCP, message) -> net)
     }
   }
 

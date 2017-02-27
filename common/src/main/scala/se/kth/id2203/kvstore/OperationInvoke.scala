@@ -4,10 +4,8 @@ import java.util.UUID
 
 import se.sics.kompics.KompicsEvent
 
-case class OperationInvoke(key: String) extends KompicsEvent {
+case class OperationInvoke(id: String, key: String) extends KompicsEvent {
 
-  val id = UUID.randomUUID
-
-  override def toString = super.toString
+  override def toString = s"$getClass($id,$key)"
 
 }

@@ -3,9 +3,10 @@ package se.kth.id2203.kvstore
 import org.slf4j.LoggerFactory
 import se.kth.id2203.{PL_Deliver, PL_Send, PerfectLink}
 import se.kth.id2203.kvstore.OperationRespond._
-import se.kth.id2203.overlay.Routing
+import se.kth.id2203.link.NetworkMessage
+import se.kth.id2203.overlay.{RouteMessage, Routing}
 import se.sics.kompics.sl._
-import se.sics.kompics.network.Address
+import se.sics.kompics.network.{Address, Network, Transport}
 
 object KVService {
 
@@ -17,15 +18,15 @@ class KVService(init: KVService.Init) extends ComponentDefinition {
 
   val log = LoggerFactory.getLogger(classOf[KVService])
 
-  val pl = requires(PerfectLink)
+  val net = requires[Network]
   val route = requires(Routing)
 
   val self = init.self
 
-  pl uponEvent {
-    case PL_Deliver(src, op@OperationInvoke(key)) => handle {
-      log.info("Got operation {}! Now implement me please :)", op)
-      trigger(PL_Send(src, OperationRespond(op.id, NotImplemented)) -> pl)
+  net uponEvent {
+    case NetworkMessage(src, _, _, op@OperationInvoke(id, key)) => handle {
+      log.info(s"Got operation $op! Now implement me please :)")
+      trigger(NetworkMessage(self, src, Transport.TCP, OperationRespond(id, NotImplemented)) -> net)
     }
   }
 
