@@ -26,13 +26,19 @@ package se.kth.id2203.link;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import se.sics.kompics.config.Conversions;
 import se.sics.kompics.config.Converter;
 
 public class NetworkAddressConverter implements Converter<NetworkAddress> {
 
+    private static final Logger log = LoggerFactory.getLogger(NetworkAddressConverter.class);
+
     @Override
     public NetworkAddress convert(Object o) {
+        log.trace("Converting {}", o);
         if (o instanceof Map) {
             try {
                 Map m = ((Map) o);
@@ -41,6 +47,7 @@ public class NetworkAddressConverter implements Converter<NetworkAddress> {
                 InetAddress ip = InetAddress.getByName(hostname);
                 return new NetworkAddress(ip, p);
             } catch (UnknownHostException ex) {
+                log.error("Map conversion failed: {}", ex);
                 return null;
             }
         }
@@ -51,9 +58,11 @@ public class NetworkAddressConverter implements Converter<NetworkAddress> {
                 int p = Integer.parseInt(ipport[1]);
                 return new NetworkAddress(ip, p);
             } catch (UnknownHostException ex) {
+                log.error("String conversion failed: {}", ex);
                 return null;
             }
         }
+        log.error("No converter found");
         return null;
     }
 

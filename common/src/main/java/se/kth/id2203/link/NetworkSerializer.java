@@ -14,7 +14,7 @@ import se.sics.kompics.network.netty.serialization.Serializers;
 
 public class NetworkSerializer implements Serializer {
 
-    final static Logger log = LoggerFactory.getLogger(NetworkSerializer.class);
+    private static final Logger log = LoggerFactory.getLogger(NetworkSerializer.class);
 
     private static final byte ADDR = 1;
     private static final byte HEADER = 2;
