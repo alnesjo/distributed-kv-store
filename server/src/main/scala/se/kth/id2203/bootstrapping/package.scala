@@ -3,7 +3,6 @@ package se.kth.id2203
 import se.sics.kompics.KompicsEvent
 import se.sics.kompics.network.Address
 import se.sics.kompics.sl.Port
-import se.sics.kompics.timer.{SchedulePeriodicTimeout, Timeout}
 
 package object bootstrapping {
 
