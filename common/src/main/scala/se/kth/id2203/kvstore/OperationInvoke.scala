@@ -1,11 +1,6 @@
 package se.kth.id2203.kvstore
 
-import java.util.UUID
-
+import se.kth.id2203.overlay.Identifier
 import se.sics.kompics.KompicsEvent
 
-case class OperationInvoke(id: String, key: String) extends KompicsEvent {
-
-  override def toString = s"$getClass($id,$key)"
-
-}
+case class OperationInvoke(id: Identifier, key: String) extends KompicsEvent

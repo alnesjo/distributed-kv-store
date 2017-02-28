@@ -17,6 +17,9 @@ class PicklingSerializer extends Serializer {
   implicit val transportPickler = TransportPickler
   scala.pickling.runtime.GlobalRegistry.picklerMap += (transportPickler.tag.key -> (x => transportPickler))
   scala.pickling.runtime.GlobalRegistry.unpicklerMap += (transportPickler.tag.key -> transportPickler)
+  implicit val uuidPickler = UUIDPickler
+  scala.pickling.runtime.GlobalRegistry.picklerMap += (uuidPickler.tag.key -> (x => uuidPickler))
+  scala.pickling.runtime.GlobalRegistry.unpicklerMap += (uuidPickler.tag.key -> uuidPickler)
 
   val log = LoggerFactory.getLogger(classOf[PicklingSerializer])
 
@@ -25,7 +28,7 @@ class PicklingSerializer extends Serializer {
   override def toBinary(o: AnyRef, buf: ByteBuf): Unit = {
     log.trace(s"Pickling: $o.")
     val json = o.pickle.value
-    log.trace(s"Pickled JSON: $json.")
+    //log.trace(s"Pickled JSON: $json.")
     val bytes = json.getBytes
     buf.writeInt(bytes.length)
     buf.writeBytes(bytes)
@@ -36,7 +39,7 @@ class PicklingSerializer extends Serializer {
     val bytes = Array.ofDim[Byte](len)
     buf.readBytes(bytes)
     val json = new String(bytes)
-    log.trace(s"Unpickled JSON: $json.")
+    //log.trace(s"Unpickled JSON: $json.")
     val o = json.unpickle[AnyRef]
     log.trace(s"Unpickled: $o.")
     o

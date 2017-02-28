@@ -1,12 +1,9 @@
 package se.kth.id2203.overlay
 
-import java.util.UUID
-
 import org.slf4j.LoggerFactory
 import se.kth.id2203.{PL_Deliver, PL_Send, PerfectLink}
 import se.kth.id2203.bootstrapping.{Booted, Bootstrapping, GetInitialAssignments, InitialAssignments}
-import se.kth.id2203.link.{NetworkAddress, NetworkMessage}
-import se.sics.kompics.network.{Address, Network, Transport}
+import se.sics.kompics.network.Address
 import se.sics.kompics.sl._
 import se.sics.kompics.timer.Timer
 
@@ -25,7 +22,7 @@ class VSOverlayManager(init: VSOverlayManager.Init) extends ComponentDefinition 
 
   val route = provides(Routing)
   val boot = requires(Bootstrapping)
-  val net = requires[Network]
+  val pl = requires(PerfectLink)
   val timer = requires[Timer]
 
   val self = init.self
@@ -56,27 +53,27 @@ class VSOverlayManager(init: VSOverlayManager.Init) extends ComponentDefinition 
       val partition: Set[Address] = lookupTable.get.lookup(key)
       val dst = partition.toVector(rnd.nextInt(partition.size))
       log.info(s"Routing local message for key $key to $dst")
-      trigger(NetworkMessage(self, dst, Transport.TCP, message) -> net)
+      trigger(PL_Send(dst, message) -> pl)
     }
   }
 
-  net uponEvent {
-    case NetworkMessage(src, _, _, Connect(id)) => handle {
+  pl uponEvent {
+    case PL_Deliver(src, Connect(id)) => handle {
       lookupTable match {
         case Some(lut) =>
           log.debug(s"Accepting connection request from $src")
           val size: Int = lut.getNodes.size
-          trigger(NetworkMessage(self, src, Transport.TCP, Ack(id, size)) -> net)
+          trigger(PL_Send(src, Ack(id, size)) -> pl)
         case _ =>
           log.info(s"Rejecting connection request from $src, as system is not ready, yet.")
       }
     }
-    case NetworkMessage(src, _, _, RouteMessage(key, message)) => handle {
+    case PL_Deliver(_, RouteMessage(key, message)) => handle {
       val group: Set[Address] = lookupTable.get.lookup(key)
       log.trace(s"Choosing random node in replication group $group")
       val dst = group.toVector(rnd.nextInt(group.size))
       log.info(s"Routing message for key $key to $dst")
-      trigger(NetworkMessage(src, dst, Transport.TCP, message) -> net)
+      trigger(PL_Send(dst, message) -> pl)
     }
   }
 

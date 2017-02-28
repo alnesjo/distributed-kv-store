@@ -3,18 +3,18 @@ package se.kth.id2203.link
 import scala.pickling._
 import java.net.{InetAddress, InetSocketAddress}
 
-object NetworkAddressPickler extends Pickler[NetworkAddress] with Unpickler[NetworkAddress] with pickler.PrimitivePicklers with pickler.PrimitiveArrayPicklers {
+object NetworkAddressPickler extends Pickler[NetworkAddress] with Unpickler[NetworkAddress] with pickler.PrimitivePicklers {
 
   override val tag = FastTypeTag[NetworkAddress]
 
   override def pickle(picklee: NetworkAddress, builder: PBuilder): Unit = {
     builder.hintTag(tag) // This is always required
     builder.beginEntry(picklee)
-    /*builder.putField("ip", { fieldBuilder =>
-      fieldBuilder.hintTag(byteArrayPickler.tag)
-      fieldBuilder.hintStaticallyElidedType()
-      byteArrayPickler.pickle(picklee.isa.getAddress.getAddress, fieldBuilder)
-    })*/
+//    builder.putField("ip", { fieldBuilder =>
+//      fieldBuilder.hintTag(byteArrayPickler.tag)
+//      fieldBuilder.hintStaticallyElidedType()
+//      byteArrayPickler.pickle(picklee.isa.getAddress.getAddress, fieldBuilder)
+//    })
     builder.putField("ip", { fieldBuilder =>
       fieldBuilder.hintTag(stringPickler.tag)
       fieldBuilder.hintStaticallyElidedType()

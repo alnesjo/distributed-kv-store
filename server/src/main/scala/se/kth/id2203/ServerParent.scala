@@ -39,10 +39,10 @@ class ServerParent(init: ServerParent.Init) extends ComponentDefinition {
   connect(PerfectLink)(pl -> boot)
   connect[Timer](timer -> boot)
 
-  connect[Network](net -> over)
+  connect(PerfectLink)(pl -> over)
   connect(Bootstrapping)(boot -> over)
 
-  connect[Network](net -> store)
+  connect(PerfectLink)(pl -> store)
   connect(Routing)(over -> store)
 
 }

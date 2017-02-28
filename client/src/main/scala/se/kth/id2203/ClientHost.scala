@@ -14,9 +14,11 @@ class ClientHost extends ComponentDefinition {
 
   val timer = create(classOf[JavaTimer], Init.NONE)
   val net = create(classOf[NettyNetwork], new NettyInit(self))
+  val pl = create(classOf[TcpLink], TcpLink.Init(self))
   val parent = create(classOf[ClientService], ClientService.Init(self))
 
   connect[Timer](timer -> parent)
-  connect[Network](net -> parent)
+  connect[Network](net -> pl)
+  connect(PerfectLink)(pl -> parent)
 
 }

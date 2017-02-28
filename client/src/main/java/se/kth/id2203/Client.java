@@ -61,14 +61,7 @@ public class Client {
         Conversions.register(NAC);
 
         Serializers.register(new PicklingSerializer(), "PS");
-        Serializers.register(NetworkAddress.class, "PS");
-        Serializers.register(NetworkHeader.class, "PS");
         Serializers.register(NetworkMessage.class, "PS");
-        Serializers.register(Connect.class, "PS");
-        Serializers.register(Ack.class, "PS");
-        Serializers.register(OperationInvoke.class, "PS");
-        Serializers.register(OperationRespond.class, "PS");
-        Serializers.register(RouteMessage.class, "PS");
 
     }
 

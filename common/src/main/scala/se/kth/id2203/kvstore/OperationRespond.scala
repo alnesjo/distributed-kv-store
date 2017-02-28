@@ -1,7 +1,6 @@
 package se.kth.id2203.kvstore
 
-import java.util.UUID
-
+import se.kth.id2203.overlay.Identifier
 import se.sics.kompics.KompicsEvent
 
 object OperationRespond {
@@ -13,8 +12,4 @@ object OperationRespond {
 
 }
 
-case class OperationRespond(id: String, status: OperationRespond.Code) extends KompicsEvent {
-
-  override def toString = s"$getClass($id,$status)"
-
-}
+case class OperationRespond(id: Identifier, status: OperationRespond.Code) extends KompicsEvent
