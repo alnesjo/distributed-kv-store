@@ -6,9 +6,7 @@ import java.net.{InetAddress, InetSocketAddress}
 
 import se.sics.kompics.network.Address
 
-class NetworkAddress(address: InetAddress, port: Int) extends Address with Comparable[NetworkAddress] {
-
-  val isa: InetSocketAddress = new InetSocketAddress(address, port)
+class NetworkAddress(val isa: InetSocketAddress) extends Address with Comparable[NetworkAddress] {
 
   def getIp: InetAddress = this.isa.getAddress
 
@@ -18,17 +16,18 @@ class NetworkAddress(address: InetAddress, port: Int) extends Address with Compa
 
   def sameHostAs(other: Address): Boolean = this.asSocket equals other.asSocket
 
-  override final def toString: String = this.isa.toString
+  override final def toString: String = s"${this.isa.getAddress.getHostAddress}:${this.isa.getPort.toString}"
 
-  override def equals(obj: Any): Boolean = {
-    obj match {
-      case other: NetworkAddress =>
-        0 == this.compareTo(other)
-      case _ => false
-    }
+  override def equals(obj: Any): Boolean = obj match {
+    case other: NetworkAddress =>
+      0 == this.compareTo(other)
+    case _ => false
   }
 
-  def compareTo(that: NetworkAddress): Int = ComparisonChain.start
+  def compareTo(that: NetworkAddress): Int = ComparisonChain
+    .start
     .compare(this.getIp.getAddress, that.getIp.getAddress, UnsignedBytes.lexicographicalComparator)
-    .compare(this.getPort, that.getPort).result
+    .compare(this.getPort, that.getPort)
+    .result
+
 }

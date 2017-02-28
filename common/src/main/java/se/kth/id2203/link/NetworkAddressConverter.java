@@ -24,6 +24,7 @@
 package se.kth.id2203.link;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
 
@@ -45,7 +46,8 @@ public class NetworkAddressConverter implements Converter<NetworkAddress> {
                 String hostname = Conversions.convert(m.get("ip"), String.class);
                 int p = Conversions.convert(m.get("port"), Integer.class);
                 InetAddress ip = InetAddress.getByName(hostname);
-                return new NetworkAddress(ip, p);
+                InetSocketAddress isa = new InetSocketAddress(ip,p);
+                return new NetworkAddress(isa);
             } catch (UnknownHostException ex) {
                 log.error("Map conversion failed: {}", ex);
                 return null;
@@ -56,7 +58,8 @@ public class NetworkAddressConverter implements Converter<NetworkAddress> {
                 String[] ipport = ((String) o).split(":");
                 InetAddress ip = InetAddress.getByName(ipport[0]);
                 int p = Integer.parseInt(ipport[1]);
-                return new NetworkAddress(ip, p);
+                InetSocketAddress isa = new InetSocketAddress(ip,p);
+                return new NetworkAddress(isa);
             } catch (UnknownHostException ex) {
                 log.error("String conversion failed: {}", ex);
                 return null;

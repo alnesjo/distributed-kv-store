@@ -24,6 +24,7 @@
 package se.kth.id2203;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.UUID;
 import org.apache.commons.cli.CommandLine;
@@ -57,23 +58,8 @@ public class Server {
 
         Conversions.register(NAC);
 
-        Serializers.register(new NetworkSerializer(), "NS");
-        Serializers.register(NetworkAddress.class, "NS");
-        Serializers.register(NetworkHeader.class, "NS");
-        Serializers.register(NetworkMessage.class, "NS");
-
         Serializers.register(new PicklingSerializer(), "PS");
-        Serializers.register(Active$.class, "PS");
-        Serializers.register(Ready$.class, "PS");
-        Serializers.register(Connect.class, "PS");
-        Serializers.register(Ack.class, "PS");
-        Serializers.register(OperationInvoke.class, "PS");
-        Serializers.register(OperationRespond.class, "PS");
-        Serializers.register(RouteMessage.class, "PS");
-
-        Serializers.register(new SpecialSerializer(), "SS");
-        Serializers.register(Boot.class, "SS");
-        Serializers.register(LookupTable.class, "SS");
+        Serializers.register(NetworkMessage.class, "PS");
 
     }
 
@@ -97,7 +83,7 @@ public class Server {
                 if (cmd.hasOption("i")) {
                     ip = cmd.getOptionValue("i");
                 }
-                self = new NetworkAddress(InetAddress.getByName(ip), port);
+                self = new NetworkAddress(new InetSocketAddress(InetAddress.getByName(ip), port));
             }
             cb.setValue("id2203.project.address", self);
             if (cmd.hasOption("c")) {

@@ -6,11 +6,10 @@ import se.sics.kompics.network.Transport
 
 class NetworkHeader(val src: Address, val dst: Address, val ptc: Transport) extends Header[Address] {
 
-  override def getSource: Address = src
+  override def getSource: Address = this.src
 
-  override def getDestination: Address = dst
+  override def getDestination: Address = this.dst
 
-  override def getProtocol: Transport = ptc
+  override def getProtocol: Transport = this.ptc
 
-  override def toString: String = s"$getClass($src,$dst,$ptc)"
 }

@@ -3,6 +3,7 @@ package se.kth.id2203.bootstrapping
 import java.util.UUID
 
 import org.slf4j.LoggerFactory
+import se.kth.id2203.overlay.LookupTable
 import se.kth.id2203.{PL_Deliver, PL_Send, PerfectLink}
 import se.sics.kompics.network.Address
 import se.sics.kompics.timer.{CancelPeriodicTimeout, SchedulePeriodicTimeout, Timeout, Timer}
@@ -37,9 +38,9 @@ class BootstrapMaster(init: BootstrapMaster.Init) extends ComponentDefinition {
 
   var state: State = Collecting
   var timeoutId: UUID = _
-  var active = Set[Address]()
-  var ready = Set[Address]()
-  var initialAssignment: NodeAssignment = _
+  var active: Set[Address] = Set()
+  var ready: Set[Address] = Set()
+  var initialAssignment: LookupTable = _
 
   ctrl uponEvent {
     case _: Start => handle {

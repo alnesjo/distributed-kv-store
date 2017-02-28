@@ -43,7 +43,7 @@ class VSOverlayManager(init: VSOverlayManager.Init) extends ComponentDefinition 
     case Booted(assignment) => handle {
       assignment match {
         case lut: LookupTable =>
-          log.info("Got NodeAssignment, overlay ready.")
+          log.info("Got assignment, overlay ready.")
           lookupTable = Some(lut)
         case _ =>
           log.error(s"Got invalid NodeAssignment type. Expected: LookupTable; Got: ${assignment.getClass}")

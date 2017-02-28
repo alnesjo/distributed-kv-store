@@ -3,6 +3,7 @@ package se.kth.id2203.bootstrapping
 import java.util.UUID
 
 import org.slf4j.LoggerFactory
+import se.kth.id2203.overlay.LookupTable
 import se.kth.id2203.{PL_Deliver, PL_Send, PerfectLink}
 import se.sics.kompics.Start
 import se.sics.kompics.network.Address
@@ -62,7 +63,7 @@ class BootstrapSlave(init: BootstrapSlave.Init) extends ComponentDefinition {
   }
 
   pl uponEvent {
-    case PL_Deliver(`master`, Boot(assignment: NodeAssignment)) => handle {
+    case PL_Deliver(`master`, Boot(assignment: LookupTable)) => handle {
       if (state == Waiting) {
         log.debug(s"Received initial assignment from master at $master.")
         trigger(Booted(assignment) -> boot)
