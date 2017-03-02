@@ -7,7 +7,7 @@ object LookupTable {
 
   def generate(nodes: Set[Address], replicationDegree: Int): LookupTable = {
     val (k, n) = nodes
-      .map(a => (a.toString.##, a))
+      .map(a => (a.##, a))
       .toList
       .unzip
     val partitions = (0 until replicationDegree)
@@ -27,7 +27,7 @@ case class LookupTable(partitions: Map[Int, Set[Address]]) {
 
   val log = LoggerFactory.getLogger(classOf[LookupTable])
 
-  def lookup(key: String): Set[Address] = partitions.keys.filter(_ <= key.##).lastOption match {
+  def lookup(key: Any): Set[Address] = partitions.keys.filter(_ <= key.##).lastOption match {
     case Some(partition) => partitions(partition)
     case None => partitions.values.last
   }

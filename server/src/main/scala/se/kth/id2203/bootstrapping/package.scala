@@ -7,13 +7,19 @@ import se.sics.kompics.sl.Port
 
 package object bootstrapping {
 
+  case object Active extends KompicsEvent
+
+  case object Ready extends KompicsEvent
+
+  case class Boot(assignment: LookupTable) extends KompicsEvent
+
   case class GetInitialAssignments(nodes: Set[Address]) extends KompicsEvent
 
   case class Booted(assignment: LookupTable) extends KompicsEvent
 
   case class InitialAssignments(assignment: LookupTable) extends KompicsEvent
 
-  object Bootstrapping extends Port {
+  class Bootstrapping extends Port {
     indication[GetInitialAssignments]
     indication[Booted]
     request[InitialAssignments]

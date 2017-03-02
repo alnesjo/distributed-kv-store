@@ -9,7 +9,7 @@ package object id2203 {
   case class FLL_Deliver(src: Address, payload: KompicsEvent) extends KompicsEvent
   case class FLL_Send(dst: Address, payload: KompicsEvent) extends KompicsEvent
 
-  object FairLossLink extends Port {
+  class FairLossLink extends Port {
     indication[FLL_Deliver]
     request[FLL_Send]
   }
@@ -17,7 +17,7 @@ package object id2203 {
   case class SL_Deliver(src: Address, payload: KompicsEvent) extends KompicsEvent
   case class SL_Send(dst: Address, payload: KompicsEvent) extends KompicsEvent
 
-  object StubbornLink extends Port {
+  class StubbornLink extends Port {
     indication[SL_Deliver]
     request[SL_Send]
   }
@@ -25,7 +25,7 @@ package object id2203 {
   case class PL_Deliver(src: Address, payload: KompicsEvent) extends KompicsEvent
   case class PL_Send(dst: Address, payload: KompicsEvent) extends KompicsEvent
 
-  object PerfectLink extends Port {
+  class PerfectLink extends Port {
     indication[PL_Deliver]
     request[PL_Send]
   }
@@ -33,7 +33,7 @@ package object id2203 {
   case class BEB_Broadcast(payload: KompicsEvent) extends KompicsEvent
   case class BEB_Deliver(src: Address, payload: KompicsEvent) extends KompicsEvent
 
-  object BestEffortBroadcast extends Port {
+  class BestEffortBroadcast extends Port {
     indication[BEB_Deliver]
     request[BEB_Broadcast]
   }
@@ -41,7 +41,7 @@ package object id2203 {
   case class RB_Broadcast(payload: KompicsEvent) extends KompicsEvent
   case class RB_Deliver(src: Address, payload: KompicsEvent) extends KompicsEvent
 
-  object ReliableBroadcast extends Port {
+  class ReliableBroadcast extends Port {
     indication[RB_Deliver]
     request[RB_Broadcast]
   }
@@ -49,7 +49,7 @@ package object id2203 {
   case class CO_Broadcast(payload: KompicsEvent) extends KompicsEvent
   case class CO_Deliver(src: Address, payload: KompicsEvent) extends KompicsEvent
 
-  object CausalOrderReliableBroadcast extends Port {
+  class CausalOrderReliableBroadcast extends Port {
     indication[CO_Deliver]
     request[CO_Broadcast]
   }
@@ -57,7 +57,7 @@ package object id2203 {
   case class EP_Suspect(process: Address) extends KompicsEvent
   case class EP_Restore(process: Address) extends KompicsEvent
 
-  object EventuallyPerfectFailureDetector extends Port {
+  class EventuallyPerfectFailureDetector extends Port {
     indication[EP_Suspect]
     indication[EP_Restore]
   }
@@ -67,7 +67,7 @@ package object id2203 {
   case class AR_Write_Invoke(value: Any) extends KompicsEvent
   case class AR_Write_Respond() extends KompicsEvent
 
-  object AtomicRegister extends Port {
+  class AtomicRegister extends Port {
     request[AR_Read_Invoke]
     request[AR_Write_Invoke]
     indication[AR_Read_Respond]

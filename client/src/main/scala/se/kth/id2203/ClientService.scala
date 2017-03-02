@@ -5,10 +5,9 @@ import java.util.concurrent.Future
 
 import com.google.common.util.concurrent.SettableFuture
 import org.slf4j.LoggerFactory
-import se.kth.id2203.kvstore.{OperationInvoke, OperationRespond}
-import se.kth.id2203.link.NetworkMessage
+import se.kth.id2203.kvstore.{GetInvoke, GetRespond}
 import se.kth.id2203.overlay._
-import se.sics.kompics.network.{Address, Network, Transport}
+import se.sics.kompics.network.Address
 import se.sics.kompics.sl._
 import se.sics.kompics.timer.{ScheduleTimeout, Timeout, Timer}
 import se.sics.kompics.{Kompics, KompicsEvent, Start}
@@ -24,14 +23,14 @@ class ClientService(init: ClientService.Init) extends ComponentDefinition {
   val log = LoggerFactory.getLogger(classOf[ClientService])
 
   val timer = requires[Timer]
-  val pl = requires(PerfectLink)
+  val pl = requires[PerfectLink]
 
   val self = init.self
   val master = cfg.getValue[Address]("id2203.project.bootstrap-address")
   val timeout = 2 * cfg.getValue[Long]("id2203.project.keepAlivePeriod")
 
   var connected: Option[Ack] = None
-  val pending = new util.TreeMap[Identifier, SettableFuture[OperationRespond]]
+  val pending = new util.TreeMap[Identifier, SettableFuture[GetRespond]]
 
   ctrl uponEvent {
     case _: Start => handle {
@@ -51,9 +50,9 @@ class ClientService(init: ClientService.Init) extends ComponentDefinition {
       val tc: Thread = new Thread(c)
       tc.start()
     }
-    case PL_Deliver(_, op@OperationRespond(id, status)) => handle {
+    case PL_Deliver(_, op@GetRespond(id, status)) => handle {
       log.debug(s"Got OperationRespond: $op")
-      val sf: SettableFuture[OperationRespond] = pending.remove(id)
+      val sf: SettableFuture[GetRespond] = pending.remove(id)
       if (sf != null) sf.set(op)
       else log.debug(s"ID $id was not pending! Ignoring response.")
     }
@@ -75,20 +74,20 @@ class ClientService(init: ClientService.Init) extends ComponentDefinition {
 
   loopbck uponEvent {
     case owf: OpWithFuture => handle {
-      trigger(PL_Send(master, RouteMessage(owf.op.key, owf.op)) -> pl)
+      trigger(PL_Send(master, owf.op) -> pl)
       pending.put(owf.op.id, owf.f)
     }
   }
 
-  def op(key: String): Future[OperationRespond] = {
-    val op = OperationInvoke(Identifier.fromSource(self), key)
+  def op(key: String): Future[GetRespond] = {
+    val op = GetInvoke(Identifier.fromSource(self), key)
     val owf = OpWithFuture(op)
     trigger(owf -> onSelf)
     owf.f
   }
 
-  case class OpWithFuture(op: OperationInvoke) extends KompicsEvent {
-    val f: SettableFuture[OperationRespond] = SettableFuture.create()
+  case class OpWithFuture(op: GetInvoke) extends KompicsEvent {
+    val f: SettableFuture[GetRespond] = SettableFuture.create()
   }
 
   class ConnectTimeout(val st: ScheduleTimeout) extends Timeout(st) {

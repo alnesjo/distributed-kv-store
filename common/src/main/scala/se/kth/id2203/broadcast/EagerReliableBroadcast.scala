@@ -9,8 +9,8 @@ class EagerReliableBroadcast(init: Init[EagerReliableBroadcast]) extends Compone
 
   case class Source(src: Address, payload: KompicsEvent) extends KompicsEvent
 
-  val beb = requires(BestEffortBroadcast)
-  val rb = provides(ReliableBroadcast)
+  val beb = requires[BestEffortBroadcast]
+  val rb = provides[ReliableBroadcast]
 
   val self = init match {case Init(s: Address) => s}
   val delivered = collection.mutable.Set[KompicsEvent]()

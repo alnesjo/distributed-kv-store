@@ -12,8 +12,8 @@ object BasicBroadcast {
 
 class BasicBroadcast(init: BasicBroadcast.Init) extends ComponentDefinition {
 
-  val pl = requires(PerfectLink)
-  val beb = provides(BestEffortBroadcast)
+  val pl = requires[PerfectLink]
+  val beb = provides[BestEffortBroadcast]
 
   val self = init.self
   val topology = init.topology

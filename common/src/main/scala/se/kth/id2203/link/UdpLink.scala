@@ -15,7 +15,7 @@ class UdpLink(init: UdpLink.Init) extends ComponentDefinition {
 
   val log = LoggerFactory.getLogger(classOf[TcpLink])
 
-  val fll = provides(FairLossLink)
+  val fll = provides[FairLossLink]
   val net = requires[Network]
 
   val self = init.self
@@ -23,12 +23,12 @@ class UdpLink(init: UdpLink.Init) extends ComponentDefinition {
   fll uponEvent {
     case e@FLL_Send(dest, payload) => handle {
       log.trace(s"Handling request $e on $fll")
-      trigger(new NetworkMessage(self, dest, Transport.UDP, payload) -> net)
+      trigger(NetworkMessage(self, dest, Transport.UDP, payload) -> net)
     }
   }
 
   net uponEvent {
-    case e: NetworkMessage => handle {
+    case e@NetworkMessage(src, `self`, Transport.UDP, payload) => handle {
       log.trace(s"Handling indication $e on $net")
       trigger(FLL_Deliver(e.getSource, e.payload) -> fll)
     }

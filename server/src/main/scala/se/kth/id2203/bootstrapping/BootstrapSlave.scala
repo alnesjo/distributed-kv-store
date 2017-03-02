@@ -28,8 +28,8 @@ class BootstrapSlave(init: BootstrapSlave.Init) extends ComponentDefinition {
 
   val log = LoggerFactory.getLogger(classOf[BootstrapSlave])
 
-  val boot = provides(Bootstrapping)
-  val pl = requires(PerfectLink)
+  val boot = provides[Bootstrapping]
+  val pl = requires[PerfectLink]
   val timer = requires[Timer]
 
   val self = init.self

@@ -1,9 +1,7 @@
 package se.kth.id2203
 
-import se.kth.id2203.bootstrapping.{BootstrapMaster, BootstrapSlave, Bootstrapping}
-import se.kth.id2203.kvstore.KVService
+import se.kth.id2203.bootstrapping.{BootstrapMaster, BootstrapSlave, Bootstrapping, Kernel}
 import se.kth.id2203.link.TcpLink
-import se.kth.id2203.overlay.{Routing, VSOverlayManager}
 import se.sics.kompics.network.{Address, Network}
 import se.sics.kompics.sl._
 import se.sics.kompics.timer.Timer
@@ -24,25 +22,20 @@ class ServerParent(init: ServerParent.Init) extends ComponentDefinition {
   val bootThreshold = cfg.getValue[Int]("id2203.project.bootThreshold")
   val keepAlivePeriod = cfg.getValue[Long]("id2203.project.keepAlivePeriod")
 
-  val pl = create(classOf[TcpLink], TcpLink.Init(self))
+  val tcp = create(classOf[TcpLink], TcpLink.Init(self))
   val boot = master match {
     case Some(address) =>
       create(classOf[BootstrapSlave], BootstrapSlave.Init(self, address, keepAlivePeriod))
     case None =>
       create(classOf[BootstrapMaster], BootstrapMaster.Init(self, bootThreshold, keepAlivePeriod))
   }
-  val over = create(classOf[VSOverlayManager], VSOverlayManager.Init(self, 1))
-  val store = create(classOf[KVService], KVService.Init(self))
+  val krnl = create(classOf[Kernel], Kernel.Init(self, 1))
 
-  connect[Network](net -> pl)
-
-  connect(PerfectLink)(pl -> boot)
+  connect[Network](net -> tcp)
+  connect[PerfectLink](tcp -> boot)
   connect[Timer](timer -> boot)
-
-  connect(PerfectLink)(pl -> over)
-  connect(Bootstrapping)(boot -> over)
-
-  connect(PerfectLink)(pl -> store)
-  connect(Routing)(over -> store)
+  connect[Timer](timer -> krnl)
+  connect[Bootstrapping](boot -> krnl)
+  connect[PerfectLink](tcp -> krnl)
 
 }

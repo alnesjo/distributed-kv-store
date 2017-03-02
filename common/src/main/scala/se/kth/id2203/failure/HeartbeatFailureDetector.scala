@@ -1,39 +1,44 @@
 package se.kth.id2203.failure
 
+import org.slf4j.LoggerFactory
 import se.kth.id2203._
 import se.sics.kompics.{KompicsEvent, Start}
 import se.sics.kompics.network.Address
 import se.sics.kompics.sl._
 import se.sics.kompics.timer.{ScheduleTimeout, Timeout, Timer}
 
-class HeartbeatFailureDetector(epfdInit: Init[HeartbeatFailureDetector]) extends ComponentDefinition {
+object HeartbeatFailureDetector {
+
+  case class Init(self: Address, topology: Set[Address], period: Long) extends se.sics.kompics.Init[HeartbeatFailureDetector]
+
+}
+
+class HeartbeatFailureDetector(init: HeartbeatFailureDetector.Init) extends ComponentDefinition {
 
   case class CheckTimeout(timeout: ScheduleTimeout) extends Timeout(timeout)
 
-  case class HeartbeatReply(seq: Int) extends KompicsEvent
-  case class HeartbeatRequest(seq: Int) extends KompicsEvent
-
-  val epfd = provides(EventuallyPerfectFailureDetector)
-  val pl = requires(PerfectLink)
-  val timer = requires[Timer]
-
-  val self = epfdInit match {case Init(s: Address) => s}
-  val topology = cfg.getValue[List[Address]]("epfd.simulation.topology")
-  val delta = cfg.getValue[Long]("epfd.simulation.delay")
-
-  var period = cfg.getValue[Long]("epfd.simulation.delay")
-  var alive = Set(cfg.getValue[List[Address]]("epfd.simulation.topology"): _*)
-  var suspected = Set[Address]()
-  var seqnum = 0
-
   def startTimer(delay: Long): Unit = {
-    val scheduledTimeout = new ScheduleTimeout(period)
+    val scheduledTimeout = new ScheduleTimeout(delay)
     scheduledTimeout.setTimeoutEvent(CheckTimeout(scheduledTimeout))
     trigger(scheduledTimeout -> timer)
   }
 
+  val log = LoggerFactory.getLogger(classOf[HeartbeatFailureDetector])
+
+  val epfd = provides[EventuallyPerfectFailureDetector]
+  val pl = requires[PerfectLink]
+  val timer = requires[Timer]
+
+  val self = init.self
+  var period = init.period
+  val topology = init.topology
+  var alive = init.topology
+  var suspected = Set.empty[Address]
+  var seqnum = 0
+
   ctrl uponEvent {
     case _: Start => handle {
+      log.trace("Starting timer.")
       startTimer(period)
     }
   }
@@ -65,7 +70,7 @@ class HeartbeatFailureDetector(epfdInit: Init[HeartbeatFailureDetector]) extends
     case PL_Deliver(src, HeartbeatRequest(seq)) => handle {
       trigger(PL_Send(src, HeartbeatReply(seq)) -> pl)
     }
-    case PL_Deliver(src, HeartbeatReply(seq)) => handle {
+    case PL_Deliver(src, HeartbeatReply(_)) => handle {
       alive += src
     }
   }

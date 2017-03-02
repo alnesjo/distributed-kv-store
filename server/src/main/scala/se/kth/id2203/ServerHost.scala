@@ -17,7 +17,6 @@ class ServerHost extends ComponentDefinition {
 
   val self = cfg.getValue[Address]("id2203.project.address")
 
-
   val timer = create(classOf[JavaTimer], Init.NONE)
   val net = create(classOf[NettyNetwork], new NettyInit(self))
   val parent = create(classOf[ServerParent], ServerParent.Init(self))

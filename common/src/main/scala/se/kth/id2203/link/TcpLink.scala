@@ -15,7 +15,7 @@ class TcpLink(init: TcpLink.Init) extends ComponentDefinition {
 
   val log = LoggerFactory.getLogger(classOf[TcpLink])
 
-  val pl = provides(PerfectLink)
+  val pl = provides[PerfectLink]
   val net = requires[Network]
 
   val self = init.self
@@ -23,7 +23,7 @@ class TcpLink(init: TcpLink.Init) extends ComponentDefinition {
   pl uponEvent {
     case e@PL_Send(dst, payload) => handle {
       log.trace(s"Handling request $e on ${pl.getPortType}")
-      trigger(new NetworkMessage(self, dst, Transport.TCP, payload) -> net)
+      trigger(NetworkMessage(self, dst, Transport.TCP, payload) -> net)
     }
   }
 

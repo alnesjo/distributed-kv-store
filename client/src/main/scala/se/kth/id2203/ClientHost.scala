@@ -19,6 +19,6 @@ class ClientHost extends ComponentDefinition {
 
   connect[Timer](timer -> parent)
   connect[Network](net -> pl)
-  connect(PerfectLink)(pl -> parent)
+  connect[PerfectLink](pl -> parent)
 
 }

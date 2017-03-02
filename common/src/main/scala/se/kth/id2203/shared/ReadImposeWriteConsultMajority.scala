@@ -1,13 +1,18 @@
 package se.kth.id2203.shared
 
+import org.slf4j.LoggerFactory
 import se.kth.id2203._
 import se.sics.kompics.network._
-import se.sics.kompics.sl._
 import se.sics.kompics.{KompicsEvent, ComponentDefinition => _, Port => _}
+import se.sics.kompics.sl._
 
-import scala.collection.mutable
+object ReadImposeWriteConsultMajority {
 
-class ReadImposeWriteConsultMajority(init: Init[ReadImposeWriteConsultMajority]) extends ComponentDefinition {
+  case class Init(self: Address, nrNodes: Int) extends se.sics.kompics.Init[ReadImposeWriteConsultMajority]
+
+}
+
+class ReadImposeWriteConsultMajority(init: ReadImposeWriteConsultMajority.Init) extends ComponentDefinition {
 
   implicit def addComparators[A](x: A)(implicit o: math.Ordering[A]): o.Ops = o.mkOrderingOps(x)
 
@@ -16,44 +21,47 @@ class ReadImposeWriteConsultMajority(init: Init[ReadImposeWriteConsultMajority])
   case class Write(rid: Int, ts: Int, wr: Int, writeVal: Option[Any]) extends KompicsEvent
   case class Ack(rid: Int) extends KompicsEvent
 
-  val nnar = provides(AtomicRegister)
-  val pl = requires(PerfectLink)
-  val beb = requires(BestEffortBroadcast)
+  val log = LoggerFactory.getLogger(classOf[ReadImposeWriteConsultMajority])
 
-  val (self: Address, n: Int) = init match {case Init(selfAddr: Address, n: Int) => (selfAddr, n)}
-  val selfRank = self.getIp.getAddress map (x => if (x < 0) x + 256 else x) apply 3
+  val nnar = provides[AtomicRegister]
+  val pl = requires[PerfectLink]
+  val beb = requires[BestEffortBroadcast]
 
-  var (ts, wr) = (0, 0)
+  val self = init.self
+  val nrNodes = init.nrNodes
+  val selfRank = self.##
+
+  var (ts,wr) = (0,0)
   var value: Option[Any] = None
   var acks = 0
   var readval: Option[Any] = None
   var writeval: Option[Any] = None
   var rid = 0
-  var readlist: mutable.Map[Address, (Int, Int, Option[Any])] = mutable.Map.empty
+  var readlist = Map.empty[Address, (Int, Int, Option[Any])]
   var reading = false
 
   nnar uponEvent {
     case AR_Read_Invoke() => handle {
-      println(s"Process $self requests to read")
+      log.debug(s"Process $self requests to read at $rid")
       rid += 1
       acks = 0
-      readlist = mutable.Map.empty
+      readlist = Map.empty
       reading = true
       trigger(BEB_Broadcast(Read(rid)) -> beb)
     };
     case AR_Write_Invoke(wval) => handle {
-      println(s"Process $self requests to write $wval")
+      log.debug(s"Process $self requests to write $wval at $rid")
       rid += 1
       writeval = Some(wval)
       acks = 0
-      readlist = mutable.Map.empty
+      readlist = Map.empty
       trigger(BEB_Broadcast(Read(rid)) -> beb)
     }
   }
 
   beb uponEvent {
     case BEB_Deliver(src, Read(r)) => handle {
-      println(s"Process $self sent VALUE to $src")
+      log.debug(s"Process $self sent VALUE to $src")
       trigger(PL_Send(src, Value(r, ts, wr, value)) -> pl)
     }
     case BEB_Deliver(src, w: Write) => handle {
@@ -69,38 +77,35 @@ class ReadImposeWriteConsultMajority(init: Init[ReadImposeWriteConsultMajority])
   pl uponEvent {
     case PL_Deliver(src, v: Value) => handle {
       if (v.rid == rid) {
-        readlist.put(src, (v.ts, v.wr, v.value))
-        if (readlist.size > n/2) {
-          var (maxts, rr) = readlist.values.toList.sortWith((l, r) => (l._1, l._2) < (r._1, r._2)).last match {
-            case (t, r, rv) =>
-              readval = rv
-              (t, r)
-          }
-          readlist = mutable.Map.empty
+        readlist += (src -> (v.ts, v.wr, v.value))
+        if (readlist.size > nrNodes/2) {
+          val highest = readlist.values.toList.sortWith((l,r) => (l._1, l._2) < (r._1, r._2)).last
+          var (maxts, rr) = (highest._1, highest._2)
+          readval = highest._3
           val bcastval = if (reading) {
             readval
           } else {
             rr = selfRank
-            maxts += maxts
+            maxts += 1
             writeval
           }
-          println(s"Process $self broadcasts WRITE")
+          log.debug(s"Process $self broadcasts WRITE")
           trigger(BEB_Broadcast(Write(rid, maxts, rr, bcastval)) -> beb)
         }
       }
     }
     case PL_Deliver(src, v: Ack) => handle {
       if (v.rid == rid) {
-        println(s"Process $self recieved ACK from $src")
+        log.debug(s"Process $self recieved ACK from $src")
         acks += 1
-        if (acks > n/2) {
+        if (acks > nrNodes/2) {
           acks = 0
           if (reading) {
             reading = false
-            println(s"Process $self successfully read $readval")
+            log.debug(s"Process $self successfully read $readval")
             trigger(AR_Read_Respond(readval) -> nnar)
           } else {
-            println(s"Process $self successfully wrote")
+            log.debug(s"Process $self successfully wrote")
             trigger(AR_Write_Respond() -> nnar)
           }
         }

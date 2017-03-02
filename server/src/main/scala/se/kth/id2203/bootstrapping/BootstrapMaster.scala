@@ -28,8 +28,8 @@ class BootstrapMaster(init: BootstrapMaster.Init) extends ComponentDefinition {
 
   val log = LoggerFactory.getLogger(classOf[BootstrapMaster])
 
-  val boot = provides(Bootstrapping)
-  val pl = requires(PerfectLink)
+  val boot = provides[Bootstrapping]
+  val pl = requires[PerfectLink]
   val timer = requires[Timer]
 
   val self = init.self

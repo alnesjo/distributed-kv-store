@@ -42,7 +42,7 @@ import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.UserInterruptException;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
-import se.kth.id2203.kvstore.OperationRespond;
+import se.kth.id2203.kvstore.GetRespond;
 import util.log4j.ColoredPatternLayout;
 
 /**
@@ -53,8 +53,6 @@ public class Console implements Runnable {
 
     private static final String PROMPT = ">";
 
-    private LineReader reader;
-    private Terminal terminal;
     private PrintWriter out;
     private final ClientService service;
     private final Map<String, Command> commands = new HashMap<>();
@@ -70,10 +68,10 @@ public class Console implements Runnable {
             @Override
             public boolean execute(String[] cmdline, ClientService worker) {
                 if (cmdline.length == 2) {
-                    Future<OperationRespond> fr = worker.op(cmdline[1]);
+                    Future<GetRespond> fr = worker.op(cmdline[1]);
                     out.println("Operation sent! Awaiting response...");
                     try {
-                        OperationRespond r = fr.get();
+                        GetRespond r = fr.get();
                         out.println("Operation complete! Response was: " + r.status());
                         return true;
                     } catch (InterruptedException | ExecutionException ex) {
@@ -148,7 +146,7 @@ public class Console implements Runnable {
         commands.put("exit", exitcom);
         commands.put("quit", exitcom);
         int longestCom = 0;
-        Set<Command> comSet = new HashSet<Command>(commands.values());
+        Set<Command> comSet = new HashSet<>(commands.values());
         for (Command c : comSet) {
             int useLength = c.usage().length();
             if (useLength > longestCom) {
@@ -161,8 +159,8 @@ public class Console implements Runnable {
     @Override
     public void run() {
         try {
-            terminal = TerminalBuilder.terminal();
-            reader = LineReaderBuilder.builder()
+            Terminal terminal = TerminalBuilder.terminal();
+            LineReader reader = LineReaderBuilder.builder()
                     .terminal(terminal)
                     .build();
             out = terminal.writer();
@@ -199,7 +197,7 @@ public class Console implements Runnable {
                         out.println(c.usage());
                     }
                 } else {
-                    out.println("Unkown command: " + cmd + " (use 'help' to see available commands)");
+                    out.println("Unknown command: " + cmd + " (use 'help' to see available commands)");
                 }
             }
         } catch (IOException ex) {
@@ -207,7 +205,7 @@ public class Console implements Runnable {
         }
     }
 
-    public static abstract class Command {
+    static abstract class Command {
 
         public abstract boolean execute(String[] cmdline, ClientService worker);
 
