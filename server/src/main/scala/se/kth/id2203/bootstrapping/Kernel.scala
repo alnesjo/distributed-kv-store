@@ -42,6 +42,7 @@ class Kernel(init: Kernel.Init) extends ComponentDefinition {
 
       val global = lut.getNodes
       val local: Set[Address] = lut.lookup(self)
+
       val lbb = create(classOf[BasicBroadcast], BasicBroadcast.Init(self, local))
       val gbb = create(classOf[BasicBroadcast], BasicBroadcast.Init(self, global))
       val htb = create(classOf[HeartbeatFailureDetector], HeartbeatFailureDetector.Init(self, global, 10000))
@@ -53,9 +54,10 @@ class Kernel(init: Kernel.Init) extends ComponentDefinition {
       connect[PerfectLink](pl -> gbb)
       connect[PerfectLink](pl -> lbb)
       connect[PerfectLink](pl -> icm)
+      connect[BestEffortBroadcast](lbb -> icm)
+      connect[PerfectLink](pl -> ovl)
       connect[EventuallyPerfectFailureDetector](htb -> ovl)
       connect[BestEffortBroadcast](gbb -> ovl)
-      connect[BestEffortBroadcast](lbb -> icm)
       connect[AtomicRegister](icm -> ovl)
 
       trigger(new Start -> lbb.control())
