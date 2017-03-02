@@ -5,7 +5,7 @@ import java.util.concurrent.Future
 
 import com.google.common.util.concurrent.SettableFuture
 import org.slf4j.LoggerFactory
-import se.kth.id2203.kvstore.{GetInvoke, GetRespond}
+import se.kth.id2203.kvstore.{GetInvoke, GetRespond, Ok}
 import se.kth.id2203.overlay._
 import se.sics.kompics.network.Address
 import se.sics.kompics.sl._
@@ -50,7 +50,7 @@ class ClientService(init: ClientService.Init) extends ComponentDefinition {
       val tc: Thread = new Thread(c)
       tc.start()
     }
-    case PL_Deliver(_, op@GetRespond(id, status)) => handle {
+    case PL_Deliver(_, op@GetRespond(id, status, Ok)) => handle {
       log.debug(s"Got OperationRespond: $op")
       val sf: SettableFuture[GetRespond] = pending.remove(id)
       if (sf != null) sf.set(op)
