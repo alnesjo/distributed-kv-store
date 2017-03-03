@@ -5,7 +5,7 @@ import java.util.concurrent.Future
 
 import com.google.common.util.concurrent.SettableFuture
 import org.slf4j.LoggerFactory
-import se.kth.id2203.kvstore.{GetInvoke, GetRespond, Ok}
+import se.kth.id2203.kvstore._
 import se.kth.id2203.overlay._
 import se.sics.kompics.network.Address
 import se.sics.kompics.sl._
@@ -73,21 +73,32 @@ class ClientService(init: ClientService.Init) extends ComponentDefinition {
   }
 
   loopbck uponEvent {
-    case owf: OpWithFuture => handle {
+    case owf: GetWithFuture => handle {
       trigger(PL_Send(master, owf.op) -> pl)
       pending.put(owf.op.id, owf.f)
     }
   }
 
-  def op(key: String): Future[GetRespond] = {
+  def get(key: String): Future[GetRespond] = {
     val op = GetInvoke(Identifier.fromSource(self), key)
-    val owf = OpWithFuture(op)
+    val owf = GetWithFuture(op)
     trigger(owf -> onSelf)
     owf.f
   }
 
-  case class OpWithFuture(op: GetInvoke) extends KompicsEvent {
+  def put(key: String, value: String): Future[PutRespond] = {
+    val op = PutInvoke(Identifier.fromSource(self), key, value)
+    val owf = PutWithFuture(op)
+    trigger(owf -> onSelf)
+    owf.f
+  }
+
+  case class GetWithFuture(op: GetInvoke) extends KompicsEvent {
     val f: SettableFuture[GetRespond] = SettableFuture.create()
+  }
+
+  case class PutWithFuture(op: PutInvoke) extends KompicsEvent {
+    val f: SettableFuture[PutRespond] = SettableFuture.create()
   }
 
   class ConnectTimeout(val st: ScheduleTimeout) extends Timeout(st) {

@@ -43,6 +43,7 @@ import org.jline.reader.UserInterruptException;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import se.kth.id2203.kvstore.GetRespond;
+import se.kth.id2203.kvstore.PutRespond;
 import util.log4j.ColoredPatternLayout;
 
 /**
@@ -63,16 +64,15 @@ public class Console implements Runnable {
     }
 
     {
-        commands.put("op", new Command() {
+        commands.put("get", new Command() {
 
             @Override
             public boolean execute(String[] cmdline, ClientService worker) {
                 if (cmdline.length == 2) {
-                    Future<GetRespond> fr = worker.op(cmdline[1]);
-                    out.println("Operation sent! Awaiting response...");
+                    Future<GetRespond> fr = worker.get(cmdline[1]);
                     try {
                         GetRespond r = fr.get();
-                        out.println("Operation complete! Response was: " + r.status());
+                        out.println(r.status() + " " + r.value());
                         return true;
                     } catch (InterruptedException | ExecutionException ex) {
                         ex.printStackTrace(out);
@@ -86,12 +86,44 @@ public class Console implements Runnable {
 
             @Override
             public String usage() {
-                return "op <key>";
+                return "get <key>";
             }
 
             @Override
             public String help() {
-                return "Just a test operation...replace with proper put get";
+                return "Get value associated with <key>.";
+            }
+        });
+        commands.put("put", new Command() {
+
+            @Override
+            public boolean execute(String[] cmdline, ClientService worker) {
+                if (cmdline.length == 2) {
+                    String[] args = cmdline[1].split(" ");
+                    if (args.length < 2) return false;
+                    Future<PutRespond> fr = worker.put(args[0], args[1]);
+                    try {
+                        PutRespond r = fr.get();
+                        out.println(r.status());
+                        return true;
+                    } catch (InterruptedException | ExecutionException ex) {
+                        ex.printStackTrace(out);
+                        return false;
+                    }
+
+                } else {
+                    return false;
+                }
+            }
+
+            @Override
+            public String usage() {
+                return "put <key> <value>";
+            }
+
+            @Override
+            public String help() {
+                return "Associate <key> with <value>.";
             }
         });
         commands.put("help", new Command() {
