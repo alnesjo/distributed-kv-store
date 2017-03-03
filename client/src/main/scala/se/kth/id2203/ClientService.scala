@@ -30,7 +30,8 @@ class ClientService(init: ClientService.Init) extends ComponentDefinition {
   val timeout = 2 * cfg.getValue[Long]("id2203.project.keepAlivePeriod")
 
   var connected: Option[Ack] = None
-  val pending = new util.TreeMap[Identifier, SettableFuture[GetRespond]]
+  val pendingGet = new util.TreeMap[Identifier, SettableFuture[GetRespond]]
+  val pendingPut = new util.TreeMap[Identifier, SettableFuture[PutRespond]]
 
   ctrl uponEvent {
     case _: Start => handle {
@@ -50,9 +51,15 @@ class ClientService(init: ClientService.Init) extends ComponentDefinition {
       val tc: Thread = new Thread(c)
       tc.start()
     }
-    case PL_Deliver(_, op@GetRespond(id, status, Ok)) => handle {
+    case PL_Deliver(_, op@GetRespond(id, _, Ok)) => handle {
       log.debug(s"Got OperationRespond: $op")
-      val sf: SettableFuture[GetRespond] = pending.remove(id)
+      val sf: SettableFuture[GetRespond] = pendingGet.remove(id)
+      if (sf != null) sf.set(op)
+      else log.debug(s"ID $id was not pending! Ignoring response.")
+    }
+    case PL_Deliver(_, op@PutRespond(id, status)) => handle {
+      log.debug(s"Got OperationRespond: $op")
+      val sf: SettableFuture[PutRespond] = pendingPut.remove(id)
       if (sf != null) sf.set(op)
       else log.debug(s"ID $id was not pending! Ignoring response.")
     }
@@ -75,7 +82,11 @@ class ClientService(init: ClientService.Init) extends ComponentDefinition {
   loopbck uponEvent {
     case owf: GetWithFuture => handle {
       trigger(PL_Send(master, owf.op) -> pl)
-      pending.put(owf.op.id, owf.f)
+      pendingGet.put(owf.op.id, owf.f)
+    }
+    case owf: PutWithFuture => handle {
+      trigger(PL_Send(master, owf.op) -> pl)
+      pendingPut.put(owf.op.id, owf.f)
     }
   }
 
