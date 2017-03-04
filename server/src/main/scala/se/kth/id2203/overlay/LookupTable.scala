@@ -33,8 +33,8 @@ case class LookupTable(partitions: Map[Int, Set[Address]], exclude: Set[Address]
 
   def getNodes: Set[Address] = partitions.values.reduce(_ ++ _).filterNot(exclude)
 
-  def suspect(address: Address): Unit = exclude += address
+  def -(address: Address): LookupTable = LookupTable(partitions, exclude + address)
 
-  def restore(address: Address): Unit = exclude -= address
+  def +(address: Address): LookupTable = LookupTable(partitions, exclude - address)
 
 }

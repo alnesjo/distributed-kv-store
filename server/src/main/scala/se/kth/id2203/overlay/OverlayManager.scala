@@ -6,6 +6,8 @@ import se.kth.id2203.kvstore._
 import se.sics.kompics.network.Address
 import se.sics.kompics.sl.{ComponentDefinition, _}
 
+import scala.util.Random
+
 object OverlayManager {
 
   case class Init(self: Address, lut: LookupTable) extends se.sics.kompics.Init[OverlayManager]
@@ -22,7 +24,7 @@ class OverlayManager(init: OverlayManager.Init) extends ComponentDefinition {
   val ar = requires[AtomicRegister]
 
   val self = init.self
-  val lut = init.lut
+  var lut = init.lut
 
   var pending = List.empty[Invocation]
 
@@ -49,7 +51,13 @@ class OverlayManager(init: OverlayManager.Init) extends ComponentDefinition {
         }
       } else {
         log.info(s"Forwarding operation invocation on key ${inv.key}")
-        for (p <- group) trigger(PL_Send(p, inv) -> pl)
+        Random.shuffle(group.toList).headOption match {
+          case Some(dst) =>
+            trigger(PL_Send(dst, inv) -> pl)
+          case None =>
+            ???
+        }
+
       }
     }
   }
@@ -93,6 +101,15 @@ class OverlayManager(init: OverlayManager.Init) extends ComponentDefinition {
           log.error("Received write response from atomic register but pending request was not a put invocation.")
           System.exit(-1)
       }
+    }
+  }
+
+  epfd uponEvent {
+    case EP_Suspect(node: Address) => handle {
+      lut -= node
+    }
+    case EP_Restore(node: Address) => handle {
+      lut += node
     }
   }
 

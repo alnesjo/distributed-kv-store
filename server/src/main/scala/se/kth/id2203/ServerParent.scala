@@ -29,7 +29,7 @@ class ServerParent(init: ServerParent.Init) extends ComponentDefinition {
     case None =>
       create(classOf[BootstrapMaster], BootstrapMaster.Init(self, bootThreshold, keepAlivePeriod))
   }
-  val krnl = create(classOf[Kernel], Kernel.Init(self, 1))
+  val krnl = create(classOf[Kernel], Kernel.Init(self, 3))
 
   connect[Network](net -> tcp)
   connect[PerfectLink](tcp -> boot)
