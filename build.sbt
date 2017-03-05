@@ -4,6 +4,7 @@ resolvers in ThisBuild ++= List(
   "Artima Maven Repository" at "http://repo.artima.com/releases",
   "artifactory" at "http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases"
 )
+
 libraryDependencies in ThisBuild ++= List(
   "se.sics.kompics" %% "kompics-scala" % "0.9.2-SNAPSHOT",
   "se.sics.kompics.simulator" % "core" % "0.9.2-SNAPSHOT",

@@ -1,7 +1,10 @@
 package se.kth.id2203.overlay
 
+import com.google.common.collect.Multimap
 import org.slf4j.LoggerFactory
 import se.sics.kompics.network.Address
+
+import scala.collection.mutable
 
 object LookupTable {
 

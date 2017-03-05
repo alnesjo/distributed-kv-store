@@ -1,4 +1,4 @@
-package se.kth.id2203.shared
+package se.kth.id2203.register
 
 import org.scalatest._
 import scala.collection.mutable
