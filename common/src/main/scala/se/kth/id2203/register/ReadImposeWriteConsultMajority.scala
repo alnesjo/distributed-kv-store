@@ -39,7 +39,7 @@ class ReadImposeWriteConsultMajority(init: ReadImposeWriteConsultMajority.Init) 
   ar uponEvent {
     case AR_Read_Invoke() => handle {
       rid += 1
-      println(s"$selfRank Read Request")
+      log.trace(s"$selfRank Read Invoke")
       acks = 0
       readlist = Map.empty
       reading = true
@@ -48,7 +48,7 @@ class ReadImposeWriteConsultMajority(init: ReadImposeWriteConsultMajority.Init) 
     };
     case AR_Write_Invoke(v) => handle {
       rid += 1
-      println(s"$selfRank Write Request")
+      log.trace(s"$selfRank Write Invoke: $v")
       writeval = Some(v)
       acks = 0
       readlist = Map.empty
@@ -97,11 +97,11 @@ class ReadImposeWriteConsultMajority(init: ReadImposeWriteConsultMajority.Init) 
         if (acks > nrNodes/2) {
           acks = 0
           if (reading) {
-            println(s"$selfRank Read Respond")
+            log.trace(s"$selfRank Read Respond: $readval")
             reading = false
             trigger(AR_Read_Respond(readval) -> ar)
           } else {
-            println(s"$selfRank Write Respond")
+            log.trace(s"$selfRank Write Respond")
             trigger(AR_Write_Respond() -> ar)
           }
         }

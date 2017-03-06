@@ -38,7 +38,6 @@ class HeartbeatFailureDetector(init: HeartbeatFailureDetector.Init) extends Comp
 
   ctrl uponEvent {
     case _: Start => handle {
-      log.trace("Starting timer.")
       startTimer(period)
     }
   }
@@ -54,9 +53,11 @@ class HeartbeatFailureDetector(init: HeartbeatFailureDetector.Init) extends Comp
           // We don't know if process p is alive, and process p is not suspected.
           // Therefore we should start suspecting process p.
           suspected += p
+          log.trace(s"$p suspected on $self.")
           trigger(EP_Suspect(p) -> epfd)
         } else if (alive.contains(p) && suspected.contains(p)) {
           suspected -= p
+          log.trace(s"$p restored on $self.")
           trigger(EP_Restore(p) -> epfd)
         }
         trigger(PL_Send(p, HeartbeatRequest(seqnum)) -> pl)
