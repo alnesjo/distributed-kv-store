@@ -17,7 +17,7 @@ object Kernel {
     * @param self Address of self
     * @param rpd Replication degree
     */
-  case class Init(self: Address, rpd: Int) extends se.sics.kompics.Init[Kernel]
+  case class Init(self: Address, rpd: Int, period: Long) extends se.sics.kompics.Init[Kernel]
 
 }
 
@@ -29,12 +29,12 @@ class Kernel(init: Kernel.Init) extends ComponentDefinition {
   val boot = requires[Bootstrapping]
   val pl = requires[PerfectLink]
 
-  val (self, rpd) = (init.self, init.rpd)
+  val (self, rpd, period) = (init.self, init.rpd, init.period)
 
   boot uponEvent {
     case GetInitialAssignments(nodes: Set[Address]) => handle {
       val lut = LookupTable.generate(nodes, rpd)
-      log.info("Generated initial node assignments.")
+      log.debug("Generated initial node assignments.")
       trigger(InitialAssignments(lut) -> boot)
     }
     case Booted(lut) => handle {
@@ -45,7 +45,7 @@ class Kernel(init: Kernel.Init) extends ComponentDefinition {
 
       val lbb = create(classOf[BasicBroadcast], BasicBroadcast.Init(self, local))
       val gbb = create(classOf[BasicBroadcast], BasicBroadcast.Init(self, global))
-      val htb = create(classOf[HeartbeatFailureDetector], HeartbeatFailureDetector.Init(self, global, 10000))
+      val htb = create(classOf[HeartbeatFailureDetector], HeartbeatFailureDetector.Init(self, global, period))
       val icm = create(classOf[ReadImposeWriteConsultMajority], ReadImposeWriteConsultMajority.Init(self, local.size))
       val ovl = create(classOf[OverlayManager], OverlayManager.Init(self, lut))
 

@@ -21,6 +21,7 @@ class ServerParent(init: ServerParent.Init) extends ComponentDefinition {
   val master = cfg.readValue[Address]("id2203.project.bootstrap-address")
   val bootThreshold = cfg.getValue[Int]("id2203.project.bootThreshold")
   val keepAlivePeriod = cfg.getValue[Long]("id2203.project.keepAlivePeriod")
+  val replicationDegree = cfg.getValue[Int]("id2203.project.replicationDegree")
 
   val tcp = create(classOf[TcpLink], TcpLink.Init(self))
   val boot = master match {
@@ -29,7 +30,7 @@ class ServerParent(init: ServerParent.Init) extends ComponentDefinition {
     case None =>
       create(classOf[BootstrapMaster], BootstrapMaster.Init(self, bootThreshold, keepAlivePeriod))
   }
-  val krnl = create(classOf[Kernel], Kernel.Init(self, 3))
+  val krnl = create(classOf[Kernel], Kernel.Init(self, replicationDegree, keepAlivePeriod))
 
   connect[Network](net -> tcp)
   connect[PerfectLink](tcp -> boot)
