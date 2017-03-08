@@ -74,4 +74,12 @@ package object id2203 {
     indication[AR_Write_Respond]
   }
 
+  case class C_Decide(value: Any) extends KompicsEvent
+  case class C_Propose(value: Any) extends KompicsEvent
+
+  class Consensus extends Port{
+    request[C_Propose]
+    indication[C_Decide]
+  }
+
 }
