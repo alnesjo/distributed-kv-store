@@ -12,10 +12,18 @@ import se.sics.kompics.timer.{CancelPeriodicTimeout, SchedulePeriodicTimeout, Ti
 
 object BootstrapSlave {
 
-  case class Init(self: Address, master: Address, keepAlivePeriod: Long) extends se.sics.kompics.Init[BootstrapSlave]
+  /**
+    * @param self Address of self
+    * @param master Address of mater
+    * @param period  Keepalive interval
+    */
+  case class Init(self: Address, master: Address, period: Long) extends se.sics.kompics.Init[BootstrapSlave]
 
 }
 
+/**
+  * @see [[se.kth.id2203.bootstrapping.BootstrapSlave.Init BootstrapSlave.Init]]
+  */
 class BootstrapSlave(init: BootstrapSlave.Init) extends ComponentDefinition {
 
   class BootstrapTimeout(spt: SchedulePeriodicTimeout) extends Timeout(spt)
@@ -32,16 +40,14 @@ class BootstrapSlave(init: BootstrapSlave.Init) extends ComponentDefinition {
   val pl = requires[PerfectLink]
   val timer = requires[Timer]
 
-  val self = init.self
-  val master = init.master
-  val period = 2 * init.keepAlivePeriod
+  val (self, master, period) = (init.self, init.master, init.period)
 
   var state: State = Waiting
   var timeoutId: UUID = _
 
   ctrl uponEvent {
     case _: Start => handle {
-      log.debug(s"Boostrapping slave at $self, initiated bootstrapping procedure. Waiting for master at $master ...")
+      log.debug(s"Bootstrapping slave at $self, initiated bootstrapping procedure. Waiting for master at $master ...")
       val spt = new SchedulePeriodicTimeout(period, period)
       spt.setTimeoutEvent(new BootstrapTimeout(spt))
       trigger(spt -> timer)

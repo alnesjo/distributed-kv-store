@@ -22,6 +22,9 @@ object BootstrapMaster {
 
 }
 
+/**
+  * @see [[se.kth.id2203.bootstrapping.BootstrapMaster.Init BootstrapMaster.Init]]
+  */
 class BootstrapMaster(init: BootstrapMaster.Init) extends ComponentDefinition {
 
   class BootstrapTimeout(spt: SchedulePeriodicTimeout) extends Timeout(spt)

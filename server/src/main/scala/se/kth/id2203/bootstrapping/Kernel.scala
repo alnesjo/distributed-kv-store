@@ -24,6 +24,10 @@ object Kernel {
 
 }
 
+/**
+  * Creates and starts core components and forwards elementary ports.
+  * @see [[se.kth.id2203.bootstrapping.Kernel.Init Kernel.Init]]
+  */
 class Kernel(init: Kernel.Init) extends ComponentDefinition {
 
   val log = LoggerFactory.getLogger(classOf[Kernel])
