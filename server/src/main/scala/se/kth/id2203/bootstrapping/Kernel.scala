@@ -8,25 +8,25 @@ import se.kth.id2203.failure.HeartbeatFailureDetector
 import se.kth.id2203.overlay.{LookupTable, OverlayManager}
 import se.kth.id2203.register.ReadImposeWriteConsultMajority
 import se.kth.id2203.{AtomicRegister, BestEffortBroadcast, EventuallyPerfectFailureDetector, PerfectLink}
-import se.sics.kompics.{Kompics, Start}
+import se.sics.kompics.Start
 import se.sics.kompics.network.Address
 import se.sics.kompics.sl._
 import se.sics.kompics.timer.Timer
 
-object Loader {
+object Kernel {
 
   /**
     * @param self Address of self
     * @param delta Replication degree
     * @param period Keepalive interval
     */
-  case class Init(self: Address, delta: Int, period: Long) extends se.sics.kompics.Init[Loader]
+  case class Init(self: Address, delta: Int, period: Long) extends se.sics.kompics.Init[Kernel]
 
 }
 
-class Loader(init: Loader.Init) extends ComponentDefinition {
+class Kernel(init: Kernel.Init) extends ComponentDefinition {
 
-  val log = LoggerFactory.getLogger(classOf[Loader])
+  val log = LoggerFactory.getLogger(classOf[Kernel])
 
   val timer = requires[Timer]
   val boot = requires[Bootstrapping]
