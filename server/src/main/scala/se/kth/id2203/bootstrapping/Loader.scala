@@ -1,5 +1,7 @@
 package se.kth.id2203.bootstrapping
 
+import java.util.UUID
+
 import org.slf4j.LoggerFactory
 import se.kth.id2203.broadcast.BasicBroadcast
 import se.kth.id2203.failure.HeartbeatFailureDetector
@@ -11,29 +13,30 @@ import se.sics.kompics.network.Address
 import se.sics.kompics.sl._
 import se.sics.kompics.timer.Timer
 
-object Kernel {
+object Loader {
 
   /**
     * @param self Address of self
-    * @param rpd Replication degree
+    * @param delta Replication degree
+    * @param period Keepalive interval
     */
-  case class Init(self: Address, rpd: Int, period: Long) extends se.sics.kompics.Init[Kernel]
+  case class Init(self: Address, delta: Int, period: Long) extends se.sics.kompics.Init[Loader]
 
 }
 
-class Kernel(init: Kernel.Init) extends ComponentDefinition {
+class Loader(init: Loader.Init) extends ComponentDefinition {
 
-  val log = LoggerFactory.getLogger(classOf[Kernel])
+  val log = LoggerFactory.getLogger(classOf[Loader])
 
   val timer = requires[Timer]
   val boot = requires[Bootstrapping]
   val pl = requires[PerfectLink]
 
-  val (self, rpd, period) = (init.self, init.rpd, init.period)
+  val (self, delta, period) = (init.self, init.delta, init.period)
 
   boot uponEvent {
     case GetInitialAssignments(nodes: Set[Address]) => handle {
-      val lut = LookupTable.generate(nodes, rpd)
+      val lut = LookupTable.generate(nodes, delta)
       log.debug("Generated initial node assignments.")
       trigger(InitialAssignments(lut) -> boot)
     }
@@ -65,6 +68,9 @@ class Kernel(init: Kernel.Init) extends ComponentDefinition {
       trigger(new Start -> htb.control())
       trigger(new Start -> icm.control())
       trigger(new Start -> ovl.control())
+
+      val x = None
+      x.nonEmpty
     }
   }
 }

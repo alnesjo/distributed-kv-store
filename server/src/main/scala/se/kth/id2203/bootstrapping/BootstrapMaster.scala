@@ -12,7 +12,12 @@ import se.sics.kompics.Start
 
 object BootstrapMaster {
 
-  case class Init(self: Address, bootThreshold: Int, keepAlivePeriod: Long)
+  /**
+    * @param self Address of self
+    * @param thresh Cluster size threshold
+    * @param period Keepalive interval
+    */
+  case class Init(self: Address, thresh: Int, period: Long)
     extends se.sics.kompics.Init[BootstrapMaster]
 
 }
@@ -33,8 +38,8 @@ class BootstrapMaster(init: BootstrapMaster.Init) extends ComponentDefinition {
   val timer = requires[Timer]
 
   val self = init.self
-  val bootThreshold = init.bootThreshold
-  val period = 2 * init.keepAlivePeriod
+  val thresh = init.thresh
+  val period = init.period
 
   var state: State = Collecting
   var timeoutId: UUID = _
@@ -57,13 +62,13 @@ class BootstrapMaster(init: BootstrapMaster.Init) extends ComponentDefinition {
     case _: BootstrapTimeout => handle {
       state match {
         case Collecting =>
-          if (active.size >= bootThreshold) {
+          if (active.size >= thresh) {
             log.debug(s"Nodes at $active are waiting for initial assignment...")
             state = Seeding
             trigger(GetInitialAssignments(active) -> boot)
           }
         case Seeding =>
-          if (ready.size >= bootThreshold) {
+          if (ready.size >= thresh) {
             log.debug(s"Nodes at $ready are ready to boot, process complete.")
             trigger(Booted(initialAssignment) -> boot)
             state = Done

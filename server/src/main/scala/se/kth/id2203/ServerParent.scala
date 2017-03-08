@@ -1,6 +1,6 @@
 package se.kth.id2203
 
-import se.kth.id2203.bootstrapping.{BootstrapMaster, BootstrapSlave, Bootstrapping, Kernel}
+import se.kth.id2203.bootstrapping._
 import se.kth.id2203.link.TcpLink
 import se.sics.kompics.network.{Address, Network}
 import se.sics.kompics.sl._
@@ -30,13 +30,13 @@ class ServerParent(init: ServerParent.Init) extends ComponentDefinition {
     case None =>
       create(classOf[BootstrapMaster], BootstrapMaster.Init(self, bootThreshold, keepAlivePeriod))
   }
-  val krnl = create(classOf[Kernel], Kernel.Init(self, replicationDegree, keepAlivePeriod))
+  val load = create(classOf[Loader], Loader.Init(self, replicationDegree, keepAlivePeriod))
 
   connect[Network](net -> tcp)
   connect[PerfectLink](tcp -> boot)
   connect[Timer](timer -> boot)
-  connect[Timer](timer -> krnl)
-  connect[Bootstrapping](boot -> krnl)
-  connect[PerfectLink](tcp -> krnl)
+  connect[Timer](timer -> load)
+  connect[Bootstrapping](boot -> load)
+  connect[PerfectLink](tcp -> load)
 
 }
