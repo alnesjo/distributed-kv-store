@@ -6,7 +6,7 @@ import java.util.concurrent.Future
 import com.google.common.util.concurrent.SettableFuture
 import org.slf4j.LoggerFactory
 import se.kth.id2203.kvstore._
-import se.kth.id2203.overlay._
+import se.kth.id2203.kvstore._
 import se.sics.kompics.network.Address
 import se.sics.kompics.sl._
 import se.sics.kompics.timer.{ScheduleTimeout, Timeout, Timer}

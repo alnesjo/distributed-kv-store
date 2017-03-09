@@ -1,6 +1,6 @@
 package se.kth.id2203
 
-import se.kth.id2203.overlay.LookupTable
+import se.kth.id2203.kvstore.LookupTable
 import se.sics.kompics.KompicsEvent
 import se.sics.kompics.network.Address
 import se.sics.kompics.sl.Port

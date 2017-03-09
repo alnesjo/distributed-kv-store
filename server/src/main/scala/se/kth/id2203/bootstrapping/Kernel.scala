@@ -5,7 +5,7 @@ import java.util.UUID
 import org.slf4j.LoggerFactory
 import se.kth.id2203.broadcast.BasicBroadcast
 import se.kth.id2203.failure.HeartbeatFailureDetector
-import se.kth.id2203.overlay.{LookupTable, OverlayManager}
+import se.kth.id2203.kvstore.{LookupTable, OverlayManager}
 import se.kth.id2203.register.ReadImposeWriteConsultMajority
 import se.kth.id2203.{AtomicRegister, BestEffortBroadcast, EventuallyPerfectFailureDetector, PerfectLink}
 import se.sics.kompics.Start

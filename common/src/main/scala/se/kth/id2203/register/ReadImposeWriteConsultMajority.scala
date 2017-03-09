@@ -2,7 +2,7 @@ package se.kth.id2203.register
 
 import org.slf4j.LoggerFactory
 import se.kth.id2203._
-import se.kth.id2203.overlay.Identifier
+import se.kth.id2203.kvstore.Identifier
 import se.sics.kompics.network._
 import se.sics.kompics.{KompicsEvent, ComponentDefinition => _, Port => _}
 import se.sics.kompics.sl._

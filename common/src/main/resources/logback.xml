@@ -19,7 +19,7 @@
 
     <logger name="Kompics" level="INFO"/>
     <logger name="se.sics.kompics.timer.java.JavaTimer" level="INFO"/>
-    <logger name="se.sics.kompics.network.netty.NettyNetwork" level="TRACE"/>
+    <logger name="se.sics.kompics.network.netty.NettyNetwork" level="INFO"/>
     <logger name="se.kth.id2203" level="DEBUG"/>
 
     <root level="INFO">

@@ -53,11 +53,11 @@ class HeartbeatFailureDetector(init: HeartbeatFailureDetector.Init) extends Comp
           // We don't know if process p is alive, and process p is not suspected.
           // Therefore we should start suspecting process p.
           suspected += p
-          log.trace(s"$p suspected on $self.")
+          log.trace(s"Suspected failure on $p.")
           trigger(EP_Suspect(p) -> epfd)
         } else if (alive.contains(p) && suspected.contains(p)) {
           suspected -= p
-          log.trace(s"$p restored on $self.")
+          log.trace(s"Restored trust in $p.")
           trigger(EP_Restore(p) -> epfd)
         }
         trigger(PL_Send(p, HeartbeatRequest(seqnum)) -> pl)

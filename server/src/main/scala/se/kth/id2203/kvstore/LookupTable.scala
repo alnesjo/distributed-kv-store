@@ -1,4 +1,4 @@
-package se.kth.id2203.overlay
+package se.kth.id2203.kvstore
 
 import com.google.common.collect.Multimap
 import org.slf4j.LoggerFactory
