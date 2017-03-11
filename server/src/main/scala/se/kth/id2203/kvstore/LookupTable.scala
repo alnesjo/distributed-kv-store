@@ -1,43 +1,49 @@
 package se.kth.id2203.kvstore
 
-import com.google.common.collect.Multimap
 import org.slf4j.LoggerFactory
 import se.sics.kompics.network.Address
 
-import scala.collection.mutable
 
 object LookupTable {
 
   def generate(nodes: Set[Address], rpd: Int): LookupTable = {
-    val (k, n) = nodes
-      .map(a => (a.##, a))
-      .toList
-      .unzip
+    val (k, n) = nodes.map(a => a.## -> a).toList.unzip
     val partitions = (0 until rpd)
       .map(i => k zip ((n drop i) ++ (n take i)))
       .reduce(_ ++ _)
       .groupBy(_._1)
       .mapValues(_ map (_._2))
-      .mapValues(_ toSet)
+      .mapValues(_.toSet)
       .map(identity) // https://issues.scala-lang.org/browse/SI-7005
     LookupTable(partitions, Set.empty)
   }
 
 }
 
-case class LookupTable(partitions: Map[Int, Set[Address]], exclude: Set[Address]) {
+/**
+  * @param replicators Maps partition keys to replicator nodes.
+  * @param excluded Nodes excluded from the system.
+  */
+case class LookupTable(replicators: Map[Int, Set[Address]], excluded: Set[Address]) {
 
   val log = LoggerFactory.getLogger(classOf[LookupTable])
 
-  def lookup(key: Any): Set[Address] = partitions.keys.filter(_ <= key.##).lastOption match {
-    case Some(partition) => partitions(partition).filterNot(exclude)
-    case None => partitions.values.last.filterNot(exclude)
+  /** Key of the partition which {@code key} belongs to. */
+  def lookup(key: Any): Int = replicators.keys.filter(_ <= key.##).lastOption match {
+    case Some(partition) => partition
+    case None => replicators.keys.last
   }
 
-  def getNodes: Set[Address] = partitions.values.reduce(_ ++ _).filterNot(exclude)
+  /** All partitions that {@code node} replicates. */
+  def partitions(node: Address): Set[Int] = replicators.filter(_._2 contains node).keySet
 
-  def -(address: Address): LookupTable = LookupTable(partitions, exclude + address)
+  /** All nodes in the system. */
+  def nodes: Set[Address] = replicators.values.reduce(_ ++ _).filterNot(excluded)
 
-  def +(address: Address): LookupTable = LookupTable(partitions, exclude - address)
+  /** Add node {@code node} to exclusion filter. */
+  def -(node: Address): LookupTable = LookupTable(replicators, excluded + node)
+
+  /** Remove node {@code node} from exclusion filter. Does nothing if {@code node} was not already excluded. */
+  def +(node: Address): LookupTable = LookupTable(replicators, excluded - node)
 
 }
